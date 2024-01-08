@@ -1,10 +1,11 @@
-import { ObjectType, Field } from '@nestjs/graphql';
+import { ObjectType, Field, Directive } from '@nestjs/graphql';
 import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 import { v4 as uuidv4 } from 'uuid';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @ObjectType()
 @Schema({ versionKey: false, id: false })
+@Directive('@key(fields: "_id")')
 export class ProductItem {
   @Prop({ required: true, default: uuidv4 })
   @Field(() => UUID, { description: 'The uuid identifier of the product item' })
