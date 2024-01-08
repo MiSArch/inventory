@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateInventoryInput } from './dto/create-inventory.input';
 import { UpdateInventoryInput } from './dto/update-inventory.input';
 import { InjectModel } from '@nestjs/mongoose';
@@ -10,25 +10,46 @@ export class InventoryService {
   constructor(
     @InjectModel(Inventory.name) private inventoryModel: Model<Inventory>,
   ) {}
-  create(createInventoryInput: CreateInventoryInput) {
+  async create(createInventoryInput: CreateInventoryInput) {
     console.log(createInventoryInput);
-    return 'This action adds a new inventory';
+    const newInventory = new this.inventoryModel({
+      ...createInventoryInput,
+    });
+    return newInventory.save();
   }
 
-  findAll() {
-    return `This action returns all inventory`;
+  async findAll() {
+    return this.inventoryModel.find({});
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} inventory`;
+  async findOne(_id: string) {
+    const existingInventory = await this.inventoryModel.findOne({ _id });
+
+    if (!existingInventory) {
+      throw new NotFoundException(`Inventory with ID "${_id}" not found`);
+    }
+
+    return existingInventory;
   }
 
-  update(id: string, updateInventoryInput: UpdateInventoryInput) {
-    console.log(updateInventoryInput);
-    return `This action updates a #${id} inventory`;
+  async update(_id: string, updateInventoryInput: UpdateInventoryInput) {
+    const existingInventory = await this.inventoryModel
+      .findOneAndUpdate({ _id }, updateInventoryInput)
+      .setOptions({ overwrite: true, new: true });
+
+    if (!existingInventory) {
+      throw new NotFoundException(`Inventory with ID "${_id}" not found`);
+    }
+
+    return existingInventory;
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} inventory`;
+  async remove(_id: string) {
+    const deletedInventory = await this.inventoryModel.findByIdAndDelete(_id);
+    return deletedInventory;
+  }
+
+  async countByProductVariantId(productVariantId: string): Promise<number> {
+    return this.inventoryModel.countDocuments({ productVariantId });
   }
 }

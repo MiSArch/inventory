@@ -1,10 +1,15 @@
 import { InputType, Field } from '@nestjs/graphql';
+import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 
 @InputType()
 export class CreateInventoryInput {
-  @Field(() => String, { description: 'The name of the inventory' })
-  name: string;
+  @Field(() => UUID, {
+    description: 'The product variant id of the inventory',
+  })
+  productVariantId: string;
 
-  @Field(() => String, { description: 'The description of the inventory' })
-  description: string;
+  @Field(() => Number, {
+    description: 'The number of products to add',
+  })
+  number: number;
 }

@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
 import { InventoryService } from './inventory.service';
 import { Inventory } from './entities/inventory.entity';
 import { CreateInventoryInput } from './dto/create-inventory.input';
@@ -10,35 +10,42 @@ export class InventoryResolver {
   constructor(private readonly inventoryService: InventoryService) {}
 
   @Mutation(() => Inventory)
-  createCategory(
-    @Args('createCategoryInput') createCategoryInput: CreateInventoryInput,
+  createInventory(
+    @Args('createInventoryInput') createInventoryInput: CreateInventoryInput,
   ) {
-    return this.inventoryService.create(createCategoryInput);
+    return this.inventoryService.create(createInventoryInput);
   }
 
-  @Query(() => [Inventory], { name: 'category' })
+  @Query(() => [Inventory], { name: 'allInventories' })
   findAll() {
     return this.inventoryService.findAll();
   }
 
-  @Query(() => Inventory, { name: 'category' })
-  findOne(@Args('id', { type: () => UUID }) id: string) {
-    return this.inventoryService.findOne(id);
+  @Query(() => Int, { name: 'countProductInventory' })
+  countByProductVariantId(
+    @Args('productVersionId', { type: () => UUID }) productVersionId: string,
+  ) {
+    return this.inventoryService.countByProductVariantId(productVersionId);
+  }
+
+  @Query(() => Inventory, { name: 'inventory' })
+  findOne(@Args('_id', { type: () => UUID }) _id: string) {
+    return this.inventoryService.findOne(_id);
   }
 
   @Mutation(() => Inventory)
-  updateCategory(
-    @Args('updateCategoryInput')
-    updateCategoryInput: UpdateInventoryInput,
+  updateInventory(
+    @Args('updateInventoryInput')
+    updateInventoryInput: UpdateInventoryInput,
   ) {
     return this.inventoryService.update(
-      updateCategoryInput.id,
-      updateCategoryInput,
+      updateInventoryInput._id,
+      updateInventoryInput,
     );
   }
 
   @Mutation(() => Inventory)
-  removeCategory(@Args('id', { type: () => UUID }) id: string) {
-    return this.inventoryService.remove(id);
+  removeInventory(@Args('_id', { type: () => UUID }) _id: string) {
+    return this.inventoryService.remove(_id);
   }
 }
