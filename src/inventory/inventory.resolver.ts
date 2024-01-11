@@ -9,11 +9,12 @@ import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 export class InventoryResolver {
   constructor(private readonly inventoryService: InventoryService) {}
 
-  @Mutation(() => Inventory)
-  createInventory(
-    @Args('createInventoryInput') createInventoryInput: CreateInventoryInput,
+  @Mutation(() => [Inventory])
+  createBatchInventory(
+    @Args('createBatchInventoryInput')
+    createInventoryInput: CreateInventoryInput,
   ) {
-    return this.inventoryService.create(createInventoryInput);
+    return this.inventoryService.createInventory(createInventoryInput);
   }
 
   @Query(() => [Inventory], { name: 'allInventories' })
