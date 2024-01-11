@@ -10,20 +10,20 @@ export class InventoryService {
   constructor(
     @InjectModel(Inventory.name) private inventoryModel: Model<Inventory>,
   ) {}
-  async createInventoryBatch(createInventoryInput: CreateInventoryInput) {
+  async createInventory(createInventoryInput: CreateInventoryInput) {
     const session = await this.inventoryModel.startSession();
     session.startTransaction();
     try {
-      const inventoryIds = [];
+      const inventories = [];
       for (let i = 0; i < createInventoryInput.number; i++) {
         const newInventory = new this.inventoryModel({
           ...createInventoryInput,
         });
         const savedInventory = await newInventory.save({ session });
-        inventoryIds.push(savedInventory._id.toString());
+        inventories.push(savedInventory);
       }
       await session.commitTransaction();
-      return inventoryIds;
+      return inventories;
     } catch (error) {
       await session.abortTransaction();
       throw error;
