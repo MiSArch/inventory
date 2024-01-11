@@ -1,0 +1,48 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type ProductItem {
+  """The uuid identifier of the product item"""
+  _id: UUID!
+
+  """The uuid identifier of the corresponding product variant"""
+  productVariantId: UUID!
+
+  """Describes if the product item is still in storage"""
+  isInInventory: Boolean!
+}
+
+"""A simple UUID parser"""
+scalar UUID
+
+type Query {
+  productItems: [ProductItem!]!
+  countProductItems(productVersionId: UUID!): Int!
+  productItem(_id: UUID!): ProductItem!
+}
+
+type Mutation {
+  createProductItemBatch(createProductItemBatchInput: CreateProductItemBatchInput!): [ProductItem!]!
+  updateProductItem(updateProductItemInput: UpdateProductItemInput!): ProductItem!
+  removeProductItem(_id: UUID!): ProductItem!
+}
+
+input CreateProductItemBatchInput {
+  """The product variant id of the product item"""
+  productVariantId: UUID!
+
+  """The number of products to add"""
+  number: Float!
+}
+
+input UpdateProductItemInput {
+  """The product item identifier"""
+  _id: UUID!
+
+  """The product variant id of the product item"""
+  productVariantId: UUID!
+
+  """The inventory state of the product item"""
+  isInInventory: Boolean!
+}

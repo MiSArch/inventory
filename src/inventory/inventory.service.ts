@@ -1,29 +1,31 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateInventoryInput } from './dto/create-inventory.input';
-import { UpdateInventoryInput } from './dto/update-inventory.input';
+import { CreateProductItemBatchInput } from './dto/create-product-item-batch.input';
+import { UpdateProductItemInput } from './dto/update-product-item.input';
 import { InjectModel } from '@nestjs/mongoose';
-import { Inventory } from './entities/inventory.entity';
+import { ProductItem } from './entities/product-item.entity';
 import { Model } from 'mongoose';
 
 @Injectable()
 export class InventoryService {
   constructor(
-    @InjectModel(Inventory.name) private inventoryModel: Model<Inventory>,
+    @InjectModel(ProductItem.name) private productItemModel: Model<ProductItem>,
   ) {}
-  async createInventory(createInventoryInput: CreateInventoryInput) {
-    const session = await this.inventoryModel.startSession();
+  async createProductItemBatch(
+    createProductItemBatchInput: CreateProductItemBatchInput,
+  ) {
+    const session = await this.productItemModel.startSession();
     session.startTransaction();
     try {
-      const inventories = [];
-      for (let i = 0; i < createInventoryInput.number; i++) {
-        const newInventory = new this.inventoryModel({
-          ...createInventoryInput,
+      const productItems = [];
+      for (let i = 0; i < createProductItemBatchInput.number; i++) {
+        const newProductItem = new this.productItemModel({
+          ...createProductItemBatchInput,
         });
-        const savedInventory = await newInventory.save({ session });
-        inventories.push(savedInventory);
+        const savedProductItem = await newProductItem.save({ session });
+        productItems.push(savedProductItem);
       }
       await session.commitTransaction();
-      return inventories;
+      return productItems;
     } catch (error) {
       await session.abortTransaction();
       throw error;
@@ -33,38 +35,39 @@ export class InventoryService {
   }
 
   async findAll() {
-    return this.inventoryModel.find({});
+    return this.productItemModel.find({});
   }
 
   async findOne(_id: string) {
-    const existingInventory = await this.inventoryModel.findOne({ _id });
+    const existingProductItems = await this.productItemModel.findOne({ _id });
 
-    if (!existingInventory) {
-      throw new NotFoundException(`Inventory with ID "${_id}" not found`);
+    if (!existingProductItems) {
+      throw new NotFoundException(`ProductItem with ID "${_id}" not found`);
     }
 
-    return existingInventory;
+    return existingProductItems;
   }
 
-  async update(_id: string, updateInventoryInput: UpdateInventoryInput) {
-    const existingInventory = await this.inventoryModel
-      .findOneAndUpdate({ _id }, updateInventoryInput)
+  async update(_id: string, updateProductItemInput: UpdateProductItemInput) {
+    const existingProductItems = await this.productItemModel
+      .findOneAndUpdate({ _id }, updateProductItemInput)
       .setOptions({ overwrite: true, new: true });
 
-    if (!existingInventory) {
-      throw new NotFoundException(`Inventory with ID "${_id}" not found`);
+    if (!existingProductItems) {
+      throw new NotFoundException(`ProductItem with ID "${_id}" not found`);
     }
 
-    return existingInventory;
+    return existingProductItems;
   }
 
   async remove(_id: string) {
-    const deletedInventory = await this.inventoryModel.findByIdAndDelete(_id);
-    return deletedInventory;
+    const deletedProductItem =
+      await this.productItemModel.findByIdAndDelete(_id);
+    return deletedProductItem;
   }
 
   async countByProductVariantId(productVariantId: string): Promise<number> {
-    return this.inventoryModel.countDocuments({
+    return this.productItemModel.countDocuments({
       productVariantId,
       isInInventory: true,
     });

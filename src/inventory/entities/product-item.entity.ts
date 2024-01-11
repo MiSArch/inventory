@@ -5,9 +5,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @ObjectType()
 @Schema({ versionKey: false, id: false })
-export class Inventory {
+export class ProductItem {
   @Prop({ required: true, default: uuidv4 })
-  @Field(() => UUID, { description: 'The uuid identifier of the inventory' })
+  @Field(() => UUID, { description: 'The uuid identifier of the product item' })
   _id: string;
 
   @Prop({ required: true })
@@ -18,9 +18,9 @@ export class Inventory {
 
   @Prop({ required: true, default: true })
   @Field(() => Boolean, {
-    description: 'Describes if the inventory is still in storage',
+    description: 'Describes if the product item is still in storage',
   })
   isInInventory: boolean;
 }
 
-export const InventorySchema = SchemaFactory.createForClass(Inventory);
+export const ProductItemSchema = SchemaFactory.createForClass(ProductItem);

@@ -2,9 +2,9 @@ import { InputType, Field } from '@nestjs/graphql';
 import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 
 @InputType()
-export class CreateInventoryInput {
+export class CreateProductItemBatchInput {
   @Field(() => UUID, {
-    description: 'The product variant id of the inventory',
+    description: 'The product variant id of the product item',
   })
   productVariantId: string;
 
