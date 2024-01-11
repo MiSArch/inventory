@@ -10,12 +10,26 @@ export class InventoryService {
   constructor(
     @InjectModel(Inventory.name) private inventoryModel: Model<Inventory>,
   ) {}
-  async create(createInventoryInput: CreateInventoryInput) {
-    console.log(createInventoryInput);
-    const newInventory = new this.inventoryModel({
-      ...createInventoryInput,
-    });
-    return newInventory.save();
+  async createInventoryBatch(createInventoryInput: CreateInventoryInput) {
+    const session = await this.inventoryModel.startSession();
+    session.startTransaction();
+    try {
+      const inventoryIds = [];
+      for (let i = 0; i < createInventoryInput.number; i++) {
+        const newInventory = new this.inventoryModel({
+          ...createInventoryInput,
+        });
+        const savedInventory = await newInventory.save({ session });
+        inventoryIds.push(savedInventory._id.toString());
+      }
+      await session.commitTransaction();
+      return inventoryIds;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 
   async findAll() {
@@ -50,6 +64,9 @@ export class InventoryService {
   }
 
   async countByProductVariantId(productVariantId: string): Promise<number> {
-    return this.inventoryModel.countDocuments({ productVariantId });
+    return this.inventoryModel.countDocuments({
+      productVariantId,
+      isInInventory: true,
+    });
   }
 }
