@@ -1,0 +1,46 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Inventory {
+  """The uuid identifier of the inventory"""
+  _id: UUID!
+
+  """The uuid identifier of the corresponding product variant"""
+  productVariantId: UUID!
+
+  """Describes if the inventory is still in storage"""
+  isInInventory: Boolean!
+}
+
+"""A simple UUID parser"""
+scalar UUID
+
+type Query {
+  allInventories: [Inventory!]!
+  countProductInventory(productVersionId: UUID!): Int!
+  inventory(_id: UUID!): Inventory!
+}
+
+type Mutation {
+  createInventory(createInventoryInput: CreateInventoryInput!): Inventory!
+  updateInventory(updateInventoryInput: UpdateInventoryInput!): Inventory!
+  removeInventory(_id: UUID!): Inventory!
+}
+
+input CreateInventoryInput {
+  """The product variant id of the inventory"""
+  productVariantId: UUID!
+
+  """The number of products to add"""
+  number: Float!
+}
+
+input UpdateInventoryInput {
+  """The product variant id of the inventory"""
+  productVariantId: UUID
+
+  """The number of products to add"""
+  number: Float
+  _id: UUID!
+}
