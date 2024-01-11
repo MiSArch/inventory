@@ -14,6 +14,7 @@ import { MongooseModule } from '@nestjs/mongoose';
       driver: ApolloFederationDriver,
       resolvers: { UUID: UUID },
       autoSchemaFile: {
+        path: 'src/inventory.gql',
         federation: 2,
       },
     }),
