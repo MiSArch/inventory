@@ -4,6 +4,9 @@ import { ProductItem } from './entities/product-item.entity';
 import { CreateProductItemBatchInput } from './dto/create-product-item-batch.input';
 import { UpdateProductItemInput } from './dto/update-product-item.input';
 import { UUID } from 'src/shared/scalars/CustomUuidScalar';
+import { FindProductItemArgs } from './dto/find-product-item.input';
+import { IPaginatedType } from 'src/shared/interfaces/pagination.interface';
+import { PaginatedProductItem } from 'src/inventory/graphql-types/paginated-product-item.dto';
 
 @Resolver(() => ProductItem)
 export class InventoryResolver {
@@ -19,9 +22,17 @@ export class InventoryResolver {
     );
   }
 
-  @Query(() => [ProductItem], { name: 'productItems' })
-  findAll() {
-    return this.inventoryService.findAll();
+  @Query(() => PaginatedProductItem, { name: 'productItems' })
+  async findAll(@Args('findProductItemsInput') args: FindProductItemArgs): Promise<IPaginatedType<ProductItem>> {
+    const [items, totalCount] = await this.inventoryService.findAll(args);
+    
+    const hasNextPage = args.skip + args.take < totalCount;
+
+    return {
+      items,
+      totalCount,
+      hasNextPage,
+    };
   }
 
   @Query(() => Int, { name: 'countProductItems' })

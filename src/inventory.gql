@@ -16,10 +16,21 @@ type ProductItem {
 """A simple UUID parser"""
 scalar UUID
 
+type PaginatedProductItem {
+  items: [ProductItem!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+}
+
 type Query {
-  productItems: [ProductItem!]!
+  productItems(findProductItemsInput: FindProductItemArgs!): PaginatedProductItem!
   countProductItems(productVersionId: UUID!): Int!
   productItem(_id: UUID!): ProductItem!
+}
+
+input FindProductItemArgs {
+  skip: Int! = 0
+  take: Int! = 25
 }
 
 type Mutation {

@@ -4,6 +4,7 @@ import { UpdateProductItemInput } from './dto/update-product-item.input';
 import { InjectModel } from '@nestjs/mongoose';
 import { ProductItem } from './entities/product-item.entity';
 import { Model } from 'mongoose';
+import { FindProductItemArgs } from './dto/find-product-item.input';
 
 @Injectable()
 export class InventoryService {
@@ -34,8 +35,15 @@ export class InventoryService {
     }
   }
 
-  async findAll() {
-    return this.productItemModel.find({});
+  async findAll(args: FindProductItemArgs = { skip: 0, take: 5 }): Promise<[ProductItem[], number]> {
+    const items: ProductItem[] = (await this.productItemModel.find(null, null, {
+      limit: args.take,
+      skip: args.skip,
+    })) as ProductItem[]
+
+    const totalCount = await this.getCount();
+
+    return [items, totalCount];
   }
 
   async findOne(_id: string) {
@@ -71,5 +79,10 @@ export class InventoryService {
       productVariantId,
       isInInventory: true,
     });
+  }
+
+  async getCount(): Promise<number> {
+    const count = await this.productItemModel.countDocuments()
+    return count
   }
 }
