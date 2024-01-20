@@ -17,7 +17,7 @@ type ProductItem {
 scalar UUID
 
 type PaginatedProductItem {
-  items: [ProductItem!]
+  nodes: [ProductItem!]
   totalCount: Int!
   hasNextPage: Boolean!
 }
@@ -30,7 +30,28 @@ type Query {
 
 input FindProductItemArgs {
   skip: Int! = 0
-  take: Int! = 25
+  first: Int! = 25
+  orderBy: ProductItemOrder!
+}
+
+input ProductItemOrder {
+  field: ProductItemOrderField!
+  direction: OrderDirection!
+}
+
+"""The field to order Product Items by"""
+enum ProductItemOrderField {
+  """Order Product Items by their ID"""
+  ID
+}
+
+"""The direction to order a list of items by"""
+enum OrderDirection {
+  """Ascending Order"""
+  ASC
+
+  """Decending Order"""
+  DESC
 }
 
 type Mutation {

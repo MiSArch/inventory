@@ -24,12 +24,12 @@ export class InventoryResolver {
 
   @Query(() => PaginatedProductItem, { name: 'productItems' })
   async findAll(@Args('findProductItemsInput') args: FindProductItemArgs): Promise<IPaginatedType<ProductItem>> {
-    const [items, totalCount] = await this.inventoryService.findAll(args);
+    const [nodes, totalCount] = await this.inventoryService.findAll(args);
     
-    const hasNextPage = args.skip + args.take < totalCount;
+    const hasNextPage = args.skip + args.first < totalCount;
 
     return {
-      items,
+      nodes,
       totalCount,
       hasNextPage,
     };

@@ -35,15 +35,18 @@ export class InventoryService {
     }
   }
 
-  async findAll(args: FindProductItemArgs = { skip: 0, take: 5 }): Promise<[ProductItem[], number]> {
-    const items: ProductItem[] = (await this.productItemModel.find(null, null, {
-      limit: args.take,
-      skip: args.skip,
-    })) as ProductItem[]
+  async findAll(args: FindProductItemArgs): Promise<[ProductItem[], number]> {
+    const { first, skip, orderBy } = args;
+    console.log('args', args)
+    const nodes: ProductItem[] = await this.productItemModel
+      .find({})
+      .limit(first)
+      .skip(skip)
+      .sort({ [orderBy.field]: orderBy.direction });
 
     const totalCount = await this.getCount();
 
-    return [items, totalCount];
+    return [nodes, totalCount];
   }
 
   async findOne(_id: string) {

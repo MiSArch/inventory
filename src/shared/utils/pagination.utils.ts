@@ -6,10 +6,10 @@ import { ProductItem } from 'src/inventory/entities/product-item.entity';
 export function Paginated<T>(classRef: Type<T>): Type<IPaginatedType<T>> {
     @ObjectType({ isAbstract: true })
     abstract class PaginatedType implements IPaginatedType<T> {
-      @Field((type) => [classRef], { nullable: true })
-      items: T[];
+      @Field(() => [classRef], { nullable: true })
+      nodes: T[];
   
-      @Field((type) => Int)
+      @Field(() => Int)
       totalCount: number;
   
       @Field()

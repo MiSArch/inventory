@@ -1,5 +1,5 @@
 export interface IPaginatedType<T> {
-    items: T[];
+    nodes: T[];
     totalCount: number;
     hasNextPage: boolean;
 }
