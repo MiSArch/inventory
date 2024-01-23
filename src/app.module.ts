@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
+import { ConfigModule } from '@nestjs/config';
 import {
   ApolloFederationDriver,
   ApolloFederationDriverConfig,
@@ -10,6 +11,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,
       resolvers: { UUID: UUID },
@@ -18,7 +20,13 @@ import { MongooseModule } from '@nestjs/mongoose';
       },
     }),
     InventoryModule,
-    MongooseModule.forRoot('mongodb://localhost/ecommerce'),
+    MongooseModule.forRoot(process.env.DATABASE_URI, {
+      dbName: process.env.DATABASE_NAME,
+      auth: {
+        username: process.env.DATABASE_USER,
+        password: process.env.DATABASE_PASS,
+      },
+    }),
   ],
 })
 export class AppModule {}
