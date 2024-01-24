@@ -1,14 +1,16 @@
 import { Resolver, ResolveField, Parent } from '@nestjs/graphql';
 import { ProductVariant } from './graphql-types/product-variant.entity';
 import { InventoryService } from './inventory.service';
-import { ProductItem } from './entities/product-item.entity';
+import { ProductItemConnection } from './graphql-types/product-item-connection.dto';
 
 @Resolver(() => ProductVariant)
-export class UsersResolver {
+export class ProductVariantResolver {
   constructor(private readonly inventoryService: InventoryService) {}
 
-  @ResolveField(() => [ProductItem])
-  productVariants(@Parent() productVariant: ProductVariant) {
-    return this.inventoryService.findByProductVariantId({ productVariantId: productVariant.id });
+  @ResolveField(() => ProductItemConnection)
+  async productItems(@Parent() productVariant: ProductVariant): Promise<ProductItemConnection>{
+    const connection = new ProductItemConnection();
+    connection.nodes = await this.inventoryService.findByProductVariantId({ productVariantId: productVariant.id });
+    return connection;
   }
 }

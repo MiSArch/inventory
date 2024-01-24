@@ -1,18 +1,22 @@
-# ------------------------------------------------------
-# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
-# ------------------------------------------------------
+extend schema
+  @link(url: "https://specs.apollo.dev/federation/v2.3", import: ["@composeDirective", "@extends", "@external", "@inaccessible", "@interfaceObject", "@key", "@override", "@provides", "@requires", "@shareable", "@tag"])
 
 """Foreign type ProductVariant"""
-type ProductVariant {
+type ProductVariant
+  @key(fields: "id")
+{
   """The uuid identifier of the product variant"""
   id: UUID!
+  productItems: ProductItemConnection!
 }
 
 """A universally unique identifier compliant UUID Scalar"""
 scalar UUID
 
 """A product Item of a product variant"""
-type ProductItem {
+type ProductItem
+  @key(fields: "id")
+{
   """The uuid identifier of the product item"""
   id: UUID!
 

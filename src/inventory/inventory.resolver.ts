@@ -152,7 +152,7 @@ export class InventoryResolver {
   }
 
   @ResolveReference()
-  resolveReference(reference: { __typename: string; id: string }) {
+  resolveReference(reference: { __typename: string; id: string }): Promise<ProductItem> {
     return this.inventoryService.findOne(reference.id);
   }
 

@@ -3,6 +3,7 @@ import { InventoryService } from './inventory.service';
 import { InventoryResolver } from './inventory.resolver';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProductItem, ProductItemSchema } from './entities/product-item.entity';
+import { ProductVariantResolver } from './product-variant.resolver';
 
 @Module({
   imports: [
@@ -10,6 +11,6 @@ import { ProductItem, ProductItemSchema } from './entities/product-item.entity';
       { name: ProductItem.name, schema: ProductItemSchema },
     ]),
   ],
-  providers: [InventoryResolver, InventoryService],
+  providers: [InventoryResolver, InventoryService, ProductVariantResolver],
 })
 export class InventoryModule {}
