@@ -3,12 +3,21 @@ import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 import { v4 as uuidv4 } from 'uuid';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-@ObjectType({ description: "A product Item of a product variant" })
-@Schema({ versionKey: false, id: false })
+@ObjectType({ description: 'A product Item of a product variant' })
+@Schema({
+  versionKey: false,
+  id: false,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
+})
 export class ProductItem {
   @Prop({ required: true, default: uuidv4 })
-  @Field(() => UUID, { description: 'The uuid identifier of the product item' })
   _id: string;
+
+  @Field(() => UUID, { description: 'The uuid identifier of the product item' })
+  get id(): string {
+    return this._id;
+  }
 
   @Prop({ required: true })
   @Field(() => UUID, {
@@ -24,3 +33,7 @@ export class ProductItem {
 }
 
 export const ProductItemSchema = SchemaFactory.createForClass(ProductItem);
+
+ProductItemSchema.virtual('id').get(function () {
+  return this._id;
+});

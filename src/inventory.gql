@@ -5,7 +5,7 @@
 """A product Item of a product variant"""
 type ProductItem {
   """The uuid identifier of the product item"""
-  _id: UUID!
+  id: UUID!
 
   """The uuid identifier of the corresponding product variant"""
   productVariantId: UUID!
