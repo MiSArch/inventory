@@ -1,15 +1,25 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Info } from '@nestjs/graphql';
 import { InventoryService } from './inventory.service';
 import { ProductItem } from './entities/product-item.entity';
 import { CreateProductItemBatchInput } from './dto/create-product-item-batch.input';
 import { UpdateProductItemInput } from './dto/update-product-item.input';
 import { UUID } from 'src/shared/scalars/CustomUuidScalar';
+import { FindProductItemArgs } from './dto/find-product-item.input';
+import { IPaginatedType } from 'src/shared/interfaces/pagination.interface';
+import { ProductItemConnection } from 'src/inventory/graphql-types/product-item-connection.dto';
+import { ProductItemOrderField } from 'src/shared/enums/product-item-order-fields.enum';
+import { queryKeys } from 'src/shared/utils/query.info.utils';
+import { FindProductItemsByProductVariantArgs } from './dto/find-product-item-by-product-version-id.args';
 
 @Resolver(() => ProductItem)
 export class InventoryResolver {
   constructor(private readonly inventoryService: InventoryService) {}
 
-  @Mutation(() => [ProductItem])
+  @Mutation(() => [ProductItem], {
+    name: 'createProductItemBatch',
+    description:
+      'Adds a batch of product items with the specified productVartiantId of size number',
+  })
   createProductItemBatch(
     @Args('createProductItemBatchInput')
     createProductItemBatchInput: CreateProductItemBatchInput,
@@ -19,24 +29,94 @@ export class InventoryResolver {
     );
   }
 
-  @Query(() => [ProductItem], { name: 'productItems' })
-  findAll() {
-    return this.inventoryService.findAll();
+  @Query(() => ProductItemConnection, {
+    name: 'productItems',
+    description: 'Retrieves all product items',
+  })
+  async findAll(
+    @Args() args: FindProductItemArgs,
+    @Info() info,
+  ): Promise<IPaginatedType<ProductItem>> {
+    const { first, skip } = args;
+
+    // get query keys to avoid unnecessary workload
+    const query = queryKeys(info);
+    let connection = new ProductItemConnection();
+    if (query.includes('nodes')) {
+      // default order is ascending by id
+      if (!args.orderBy) {
+        args.orderBy = {
+          field: ProductItemOrderField.ID,
+          direction: 1,
+        };
+      }
+
+      // get nodes according to args
+      connection.nodes = await this.inventoryService.findAll(args);
+    }
+
+    if (query.includes('totalCount') || query.includes('hasNextPage')) {
+      const totalCount = await this.inventoryService.getCount();
+
+      connection.totalCount = totalCount;
+      connection.hasNextPage = skip + first < totalCount;
+    }
+
+    return connection;
   }
 
-  @Query(() => Int, { name: 'countProductItems' })
-  countByProductVariantId(
-    @Args('productVersionId', { type: () => UUID }) productVersionId: string,
+  @Query(() => ProductItemConnection, {
+    name: 'productItemsByProductVariantId',
+    description:
+      'Returns product items in inventory of a product variant version',
+  })
+  async findByProductVariantId(
+    @Args() args: FindProductItemsByProductVariantArgs,
+    @Info() info,
   ) {
-    return this.inventoryService.countByProductVariantId(productVersionId);
+    const { first, skip, productVariantId } = args;
+  
+    // get query keys to avoid unnecessary workload
+    const query = queryKeys(info);
+    let connection = new ProductItemConnection();
+
+    if (query.includes('nodes')) 
+    {
+      // default order is ascending by id
+      if (!args.orderBy) {
+        args.orderBy = {
+          field: ProductItemOrderField.ID,
+          direction: 1,
+        };
+      }
+
+      // get nodes according to args
+      connection.nodes = await this.inventoryService.findByProductVariantId(args);
+    }
+
+    if (query.includes('totalCount') || query.includes('hasNextPage')) {
+      connection.totalCount = await this.inventoryService.countByProductVariantId(productVariantId);
+      connection.hasNextPage = skip + first < connection.totalCount;
+    }
+    return connection;
   }
 
-  @Query(() => ProductItem, { name: 'productItem' })
-  findOne(@Args('_id', { type: () => UUID }) _id: string) {
+  @Query(() => ProductItem, {
+    name: 'productItem',
+    description: 'Retrieves a product item by id',
+  })
+  findOne(
+    @Args('_id', { type: () => UUID, description: 'UUID of the user' })
+    _id: string,
+  ) {
     return this.inventoryService.findOne(_id);
   }
 
-  @Mutation(() => ProductItem)
+  @Mutation(() => ProductItem, {
+    name: 'updateProductItem',
+    description:
+      'Updates storage state, productVariantId of a specific product item referenced with an Id',
+  })
   updateProductItem(
     @Args('updateProductItemInput')
     updateProductItemInput: UpdateProductItemInput,
@@ -47,8 +127,17 @@ export class InventoryResolver {
     );
   }
 
-  @Mutation(() => ProductItem)
-  removeProductItem(@Args('_id', { type: () => UUID }) _id: string) {
-    return this.inventoryService.remove(_id);
+  @Mutation(() => ProductItem, {
+    name: 'deleteProductItem',
+    description: 'Deletes a product item by id',
+  })
+  deleteProductItem(
+    @Args('_id', {
+      type: () => UUID,
+      description: 'UUID of product item to delete',
+    })
+    _id: string,
+  ) {
+    return this.inventoryService.delete(_id);
   }
 }

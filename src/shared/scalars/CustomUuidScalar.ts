@@ -11,7 +11,7 @@ function validate(uuid: unknown): string | never {
 
 export const UUID = new GraphQLScalarType({
   name: 'UUID',
-  description: 'A simple UUID parser',
+  description: 'A universally unique identifier compliant UUID Scalar',
   serialize: (value) => validate(value),
   parseValue: (value) => validate(value),
   parseLiteral: (ast) => {

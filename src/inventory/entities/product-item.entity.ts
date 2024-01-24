@@ -3,7 +3,7 @@ import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 import { v4 as uuidv4 } from 'uuid';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-@ObjectType()
+@ObjectType({ description: "A product Item of a product variant" })
 @Schema({ versionKey: false, id: false })
 export class ProductItem {
   @Prop({ required: true, default: uuidv4 })
