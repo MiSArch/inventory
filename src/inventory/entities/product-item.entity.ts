@@ -11,7 +11,7 @@ import { ProductVariant } from '../graphql-types/product-variant.entity';
   toJSON: { virtuals: true },
   toObject: { virtuals: true },
 })
-@Directive('@key(fields: "_id")')
+@Directive('@key(fields: "id")')
 export class ProductItem {
   @Prop({ required: true, default: uuidv4 })
   _id: string;

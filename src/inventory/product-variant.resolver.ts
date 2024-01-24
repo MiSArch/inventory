@@ -8,8 +8,7 @@ export class UsersResolver {
   constructor(private readonly inventoryService: InventoryService) {}
 
   @ResolveField(() => [ProductItem])
-  posts(@Parent() productVariant: ProductVariant) {
-    // TODO change to productItems
-    return this.inventoryService.findAll();
+  productVariants(@Parent() productVariant: ProductVariant) {
+    return this.inventoryService.findByProductVariantId({ productVariantId: productVariant.id });
   }
 }

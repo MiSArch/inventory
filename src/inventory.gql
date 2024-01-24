@@ -2,20 +2,26 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"""Foreign type ProductVariant"""
+type ProductVariant {
+  """The uuid identifier of the product variant"""
+  id: UUID!
+}
+
+"""A universally unique identifier compliant UUID Scalar"""
+scalar UUID
+
 """A product Item of a product variant"""
 type ProductItem {
   """The uuid identifier of the product item"""
   id: UUID!
 
-  """The uuid identifier of the corresponding product variant"""
-  productVariantId: UUID!
+  """The corresponding product variant"""
+  productVariant: ProductVariant!
 
   """Describes if the product item is still in storage"""
   isInInventory: Boolean!
 }
-
-"""A universally unique identifier compliant UUID Scalar"""
-scalar UUID
 
 """A connection of product items"""
 type ProductItemConnection {

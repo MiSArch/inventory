@@ -3,7 +3,7 @@ import {
   Query,
   Mutation,
   Args,
-  Int,
+  Info,
   ResolveReference,
   ResolveField,
   Parent,
