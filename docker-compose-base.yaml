@@ -33,7 +33,7 @@ services:
       - "27017:27017"
     volumes:
       - inventory-db-data:/data/db
-    command: ["-f", "/etc/mongod.conf"]
+    command: mongod --replSet rs0 --bind_ip_all
 
 volumes:
   inventory-db-data:
