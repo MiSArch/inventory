@@ -9,6 +9,7 @@ import { IPaginatedType } from 'src/shared/interfaces/pagination.interface';
 import { ProductItemConnection } from 'src/inventory/graphql-types/product-item-connection.dto';
 import { ProductItemOrderField } from 'src/shared/enums/product-item-order-fields.enum';
 import { queryKeys } from 'src/shared/utils/query.info.utils';
+import { FindProductItemsByProductVariantArgs } from './dto/find-product-item-by-product-version-id.args';
 
 @Resolver(() => ProductItem)
 export class InventoryResolver {
@@ -36,17 +37,21 @@ export class InventoryResolver {
     @Args() args: FindProductItemArgs,
     @Info() info,
   ): Promise<IPaginatedType<ProductItem>> {
-    if (!args.orderBy) {
-      args.orderBy = {
-        field: ProductItemOrderField.ID,
-        direction: 1,
-      };
-    }
+    const { first, skip } = args;
 
     // get query keys to avoid unnecessary workload
     const query = queryKeys(info);
     let connection = new ProductItemConnection();
     if (query.includes('nodes')) {
+      // default order is ascending by id
+      if (!args.orderBy) {
+        args.orderBy = {
+          field: ProductItemOrderField.ID,
+          direction: 1,
+        };
+      }
+
+      // get nodes according to args
       connection.nodes = await this.inventoryService.findAll(args);
     }
 
@@ -54,25 +59,46 @@ export class InventoryResolver {
       const totalCount = await this.inventoryService.getCount();
 
       connection.totalCount = totalCount;
-      connection.hasNextPage = args.skip + args.first < totalCount;
+      connection.hasNextPage = skip + first < totalCount;
     }
 
     return connection;
   }
 
-  @Query(() => Int, {
-    name: 'countProductItems',
+  @Query(() => ProductItemConnection, {
+    name: 'productItemsByProductVariantId',
     description:
-      'Counts all product items in inventory of a product variant version',
+      'Returns product items in inventory of a product variant version',
   })
-  countByProductVariantId(
-    @Args('productVersionId', {
-      type: () => UUID,
-      description: 'UUID of product variant for stock count',
-    })
-    productVersionId: string,
+  async findByProductVariantId(
+    @Args() args: FindProductItemsByProductVariantArgs,
+    @Info() info,
   ) {
-    return this.inventoryService.countByProductVariantId(productVersionId);
+    const { first, skip, productVariantId } = args;
+  
+    // get query keys to avoid unnecessary workload
+    const query = queryKeys(info);
+    let connection = new ProductItemConnection();
+
+    if (query.includes('nodes')) 
+    {
+      // default order is ascending by id
+      if (!args.orderBy) {
+        args.orderBy = {
+          field: ProductItemOrderField.ID,
+          direction: 1,
+        };
+      }
+
+      // get nodes according to args
+      connection.nodes = await this.inventoryService.findByProductVariantId(args);
+    }
+
+    if (query.includes('totalCount') || query.includes('hasNextPage')) {
+      connection.totalCount = await this.inventoryService.countByProductVariantId(productVariantId);
+      connection.hasNextPage = skip + first < connection.totalCount;
+    }
+    return connection;
   }
 
   @Query(() => ProductItem, {

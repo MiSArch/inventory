@@ -42,11 +42,20 @@ type Query {
     orderBy: ProductItemOrder
   ): ProductItemConnection!
 
-  """Counts all product items in inventory of a product variant version"""
-  countProductItems(
+  """Returns product items in inventory of a product variant version"""
+  productItemsByProductVariantId(
     """UUID of product variant for stock count"""
-    productVersionId: UUID!
-  ): Int!
+    productVariantId: UUID!
+
+    """Number of items to skip"""
+    skip: Int = 0
+
+    """Number of items to return"""
+    first: Int = 2147483647
+
+    """Ordering"""
+    orderBy: ProductItemOrder
+  ): ProductItemConnection!
 
   """Retrieves a product item by id"""
   productItem(

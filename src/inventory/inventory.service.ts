@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ProductItem } from './entities/product-item.entity';
 import { Model } from 'mongoose';
 import { FindProductItemArgs } from './dto/find-product-item.input';
+import { FindProductItemsByProductVariantArgs } from './dto/find-product-item-by-product-version-id.args';
 
 @Injectable()
 export class InventoryService {
@@ -37,14 +38,12 @@ export class InventoryService {
 
   async findAll(args: FindProductItemArgs): Promise<ProductItem[]> {
     const { first, skip, orderBy } = args;
-    console.log('args', args)
-    const nodes: ProductItem[] = await this.productItemModel
+    console.log('args', args);
+    return this.productItemModel
       .find({})
       .limit(first)
       .skip(skip)
       .sort({ [orderBy.field]: orderBy.direction });
-
-    return nodes;
   }
 
   async findOne(_id: string) {
@@ -82,8 +81,24 @@ export class InventoryService {
     });
   }
 
+  async findByProductVariantId(
+    args: FindProductItemsByProductVariantArgs,
+  ): Promise<ProductItem[]> {
+    const { first, skip, orderBy, productVariantId } = args;
+    console.log('args', args);
+
+    return this.productItemModel
+      .find({
+        productVariantId,
+        isInInventory: true,
+      })
+      .limit(first)
+      .skip(skip)
+      .sort({ [orderBy.field]: orderBy.direction });
+  }
+
   async getCount(): Promise<number> {
-    const count = await this.productItemModel.countDocuments()
-    return count
+    const count = await this.productItemModel.countDocuments();
+    return count;
   }
 }
