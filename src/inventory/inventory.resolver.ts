@@ -106,10 +106,10 @@ export class InventoryResolver {
     description: 'Retrieves a product item by id',
   })
   findOne(
-    @Args('_id', { type: () => UUID, description: 'UUID of the user' })
-    _id: string,
+    @Args('id', { type: () => UUID, description: 'UUID of the user' })
+    id: string,
   ) {
-    return this.inventoryService.findOne(_id);
+    return this.inventoryService.findOne(id);
   }
 
   @Mutation(() => ProductItem, {
@@ -122,7 +122,7 @@ export class InventoryResolver {
     updateProductItemInput: UpdateProductItemInput,
   ) {
     return this.inventoryService.update(
-      updateProductItemInput._id,
+      updateProductItemInput.id,
       updateProductItemInput,
     );
   }
@@ -132,12 +132,12 @@ export class InventoryResolver {
     description: 'Deletes a product item by id',
   })
   deleteProductItem(
-    @Args('_id', {
+    @Args('id', {
       type: () => UUID,
       description: 'UUID of product item to delete',
     })
-    _id: string,
+    id: string,
   ) {
-    return this.inventoryService.delete(_id);
+    return this.inventoryService.delete(id);
   }
 }
