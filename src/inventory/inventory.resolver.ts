@@ -7,6 +7,7 @@ import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 import { FindProductItemArgs } from './dto/find-product-item.input';
 import { IPaginatedType } from 'src/shared/interfaces/pagination.interface';
 import { ProductItemConnection } from 'src/inventory/graphql-types/product-item-connection.dto';
+import { ProductItemOrderField } from 'src/shared/enums/product-item-order-fields.enum';
 
 @Resolver(() => ProductItem)
 export class InventoryResolver {
@@ -33,6 +34,12 @@ export class InventoryResolver {
   async findAll(
     @Args() args: FindProductItemArgs,
   ): Promise<IPaginatedType<ProductItem>> {
+    if (!args.orderBy) {
+      args.orderBy = {
+        field: ProductItemOrderField.ID,
+        direction: 1,
+      };
+    }
     const [nodes, totalCount] = await this.inventoryService.findAll(args);
 
     const hasNextPage = args.skip + args.first < totalCount;

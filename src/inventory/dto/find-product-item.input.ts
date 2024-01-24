@@ -20,5 +20,5 @@ export class FindProductItemArgs {
   first: number = MAX_INT32;
 
   @Field(() => ProductItemOrder, { description: 'Ordering', nullable: true })
-  orderBy: ProductItemOrder = new ProductItemOrder();
+  orderBy: ProductItemOrder;
 }

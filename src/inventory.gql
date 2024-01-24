@@ -37,7 +37,7 @@ type Query {
     first: Int = 2147483647
 
     """Ordering"""
-    orderBy: ProductItemOrder = {field: ID, direction: ASC}
+    orderBy: ProductItemOrder
   ): ProductItemConnection!
 
   """Counts all product items of a product variant version"""
@@ -50,10 +50,10 @@ type Query {
 """Ordering options for product items"""
 input ProductItemOrder {
   """The field to order by"""
-  field: ProductItemOrderField = ID
+  field: ProductItemOrderField
 
   """The direction to order by"""
-  direction: OrderDirection! = ASC
+  direction: OrderDirection
 }
 
 """The field to order Product Items by"""
