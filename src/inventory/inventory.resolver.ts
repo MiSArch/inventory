@@ -62,12 +62,12 @@ export class InventoryResolver {
   }
 
   @ResolveReference()
-  resolveReference(reference: { __typename: string; _id: string }) {
-    return this.inventoryService.findOne(reference._id);
+  resolveReference(reference: { __typename: string; id: string }) {
+    return this.inventoryService.findOne(reference.id);
   }
 
   @ResolveField()
   productVariant(@Parent() productItem: Inventory) {
-    return { __typename: 'ProductVariant', Id: productItem.productVariant };
+    return { __typename: 'ProductVariant', id: productItem.productVariant };
   }
 }
