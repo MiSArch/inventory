@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Info } from '@nestjs/graphql';
 import { InventoryService } from './inventory.service';
 import { ProductItem } from './entities/product-item.entity';
 import { CreateProductItemBatchInput } from './dto/create-product-item-batch.input';
@@ -8,6 +8,7 @@ import { FindProductItemArgs } from './dto/find-product-item.input';
 import { IPaginatedType } from 'src/shared/interfaces/pagination.interface';
 import { ProductItemConnection } from 'src/inventory/graphql-types/product-item-connection.dto';
 import { ProductItemOrderField } from 'src/shared/enums/product-item-order-fields.enum';
+import { queryKeys } from 'src/shared/utils/query.info.utils';
 
 @Resolver(() => ProductItem)
 export class InventoryResolver {
@@ -33,6 +34,7 @@ export class InventoryResolver {
   })
   async findAll(
     @Args() args: FindProductItemArgs,
+    @Info() info,
   ): Promise<IPaginatedType<ProductItem>> {
     if (!args.orderBy) {
       args.orderBy = {
@@ -40,15 +42,22 @@ export class InventoryResolver {
         direction: 1,
       };
     }
-    const [nodes, totalCount] = await this.inventoryService.findAll(args);
 
-    const hasNextPage = args.skip + args.first < totalCount;
+    // get query keys to avoid unnecessary workload
+    const query = queryKeys(info);
+    let connection = new ProductItemConnection();
+    if (query.includes('nodes')) {
+      connection.nodes = await this.inventoryService.findAll(args);
+    }
 
-    return {
-      nodes,
-      totalCount,
-      hasNextPage,
-    };
+    if (query.includes('totalCount') || query.includes('hasNextPage')) {
+      const totalCount = await this.inventoryService.getCount();
+
+      connection.totalCount = totalCount;
+      connection.hasNextPage = args.skip + args.first < totalCount;
+    }
+
+    return connection;
   }
 
   @Query(() => Int, {

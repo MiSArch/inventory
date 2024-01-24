@@ -35,7 +35,7 @@ export class InventoryService {
     }
   }
 
-  async findAll(args: FindProductItemArgs): Promise<[ProductItem[], number]> {
+  async findAll(args: FindProductItemArgs): Promise<ProductItem[]> {
     const { first, skip, orderBy } = args;
     console.log('args', args)
     const nodes: ProductItem[] = await this.productItemModel
@@ -44,9 +44,7 @@ export class InventoryService {
       .skip(skip)
       .sort({ [orderBy.field]: orderBy.direction });
 
-    const totalCount = await this.getCount();
-
-    return [nodes, totalCount];
+    return nodes;
   }
 
   async findOne(_id: string) {
