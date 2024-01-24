@@ -1,7 +1,7 @@
 import { InputType, Field } from '@nestjs/graphql';
 import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 
-@InputType()
+@InputType({ description: 'The input of a product item update'})
 export class UpdateProductItemInput {
   @Field(() => UUID, {
     description: 'The product item identifier',

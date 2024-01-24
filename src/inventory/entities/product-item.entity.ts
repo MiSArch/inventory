@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ProductVariant } from '../graphql-types/product-variant.entity';
 
-@ObjectType()
+@ObjectType({ description: "A product Item of a product variant" })
 @Schema({ versionKey: false, id: false })
 @Directive('@key(fields: "_id")')
 export class ProductItem {

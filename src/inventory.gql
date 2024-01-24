@@ -2,6 +2,7 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"""A product Item of a product variant"""
 type ProductItem {
   """The uuid identifier of the product item"""
   _id: UUID!
@@ -13,21 +14,99 @@ type ProductItem {
   isInInventory: Boolean!
 }
 
-"""A simple UUID parser"""
+"""A universally unique identifier compliant UUID Scalar"""
 scalar UUID
 
+"""A connection of product items"""
+type ProductItemConnection {
+  """The resulting items"""
+  nodes: [ProductItem!]
+
+  """The total amount of items in this connection"""
+  totalCount: Int!
+
+  """Whether this connection has a next page"""
+  hasNextPage: Boolean!
+}
+
 type Query {
-  productItems: [ProductItem!]!
-  countProductItems(productVersionId: UUID!): Int!
-  productItem(_id: UUID!): ProductItem!
+  """Retrieves all product items"""
+  productItems(
+    """Number of items to skip"""
+    skip: Int = 0
+
+    """Number of items to return"""
+    first: Int = 2147483647
+
+    """Ordering"""
+    orderBy: ProductItemOrder
+  ): ProductItemConnection!
+
+  """Returns product items in inventory of a product variant version"""
+  productItemsByProductVariantId(
+    """UUID of product variant for stock count"""
+    productVariantId: UUID!
+
+    """Number of items to skip"""
+    skip: Int = 0
+
+    """Number of items to return"""
+    first: Int = 2147483647
+
+    """Ordering"""
+    orderBy: ProductItemOrder
+  ): ProductItemConnection!
+
+  """Retrieves a product item by id"""
+  productItem(
+    """UUID of the user"""
+    _id: UUID!
+  ): ProductItem!
+}
+
+"""Ordering options for product items"""
+input ProductItemOrder {
+  """The field to order by"""
+  field: ProductItemOrderField
+
+  """The direction to order by"""
+  direction: OrderDirection
+}
+
+"""The field to order Product Items by"""
+enum ProductItemOrderField {
+  """Order Product Items by their ID"""
+  ID
+}
+
+"""The direction to order a list of items by"""
+enum OrderDirection {
+  """Ascending Order"""
+  ASC
+
+  """Decending Order"""
+  DESC
 }
 
 type Mutation {
+  """
+  Adds a batch of product items with the specified productVartiantId of size number
+  """
   createProductItemBatch(createProductItemBatchInput: CreateProductItemBatchInput!): [ProductItem!]!
+
+  """
+  Updates storage state, productVariantId of a specific product item referenced with an Id
+  """
   updateProductItem(updateProductItemInput: UpdateProductItemInput!): ProductItem!
-  removeProductItem(_id: UUID!): ProductItem!
+
+  """Deletes a product item by id"""
+  deleteProductItem(
+    """UUID of product item to delete"""
+    _id: UUID!
+  ): ProductItem!
 }
 
+"""The input of a product item batch creation"""
 input CreateProductItemBatchInput {
   """The product variant id of the product item"""
   productVariantId: UUID!
@@ -36,6 +115,7 @@ input CreateProductItemBatchInput {
   number: Float!
 }
 
+"""The input of a product item update"""
 input UpdateProductItemInput {
   """The product item identifier"""
   _id: UUID!
