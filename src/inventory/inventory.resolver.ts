@@ -1,4 +1,14 @@
-import { Resolver, Query, Mutation, Args, Int, Info } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  Int,
+  ResolveReference,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
+
 import { InventoryService } from './inventory.service';
 import { ProductItem } from './entities/product-item.entity';
 import { CreateProductItemBatchInput } from './dto/create-product-item-batch.input';
@@ -139,5 +149,15 @@ export class InventoryResolver {
     id: string,
   ) {
     return this.inventoryService.delete(id);
+  }
+
+  @ResolveReference()
+  resolveReference(reference: { __typename: string; id: string }) {
+    return this.inventoryService.findOne(reference.id);
+  }
+
+  @ResolveField()
+  productVariant(@Parent() productItem: ProductItem) {
+    return { __typename: 'ProductVariant', id: productItem.productVariant };
   }
 }
