@@ -6,7 +6,7 @@ export class UpdateProductItemInput {
   @Field(() => UUID, {
     description: 'The product item identifier',
   })
-  _id: string;
+  id: string;
 
   @Field(() => UUID, {
     description: 'The product variant id of the product item',

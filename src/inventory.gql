@@ -5,7 +5,7 @@
 """A product Item of a product variant"""
 type ProductItem {
   """The uuid identifier of the product item"""
-  _id: UUID!
+  id: UUID!
 
   """The uuid identifier of the corresponding product variant"""
   productVariantId: UUID!
@@ -60,7 +60,7 @@ type Query {
   """Retrieves a product item by id"""
   productItem(
     """UUID of the user"""
-    _id: UUID!
+    id: UUID!
   ): ProductItem!
 }
 
@@ -102,7 +102,7 @@ type Mutation {
   """Deletes a product item by id"""
   deleteProductItem(
     """UUID of product item to delete"""
-    _id: UUID!
+    id: UUID!
   ): ProductItem!
 }
 
@@ -118,7 +118,7 @@ input CreateProductItemBatchInput {
 """The input of a product item update"""
 input UpdateProductItemInput {
   """The product item identifier"""
-  _id: UUID!
+  id: UUID!
 
   """The product variant id of the product item"""
   productVariantId: UUID!
