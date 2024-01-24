@@ -67,7 +67,7 @@ export class InventoryResolver {
   }
 
   @ResolveField()
-  productVariant(@Parent() productItem: Inventory) {
+  productVariant(@Parent() productItem: ProductItem) {
     return { __typename: 'ProductVariant', id: productItem.productVariant };
   }
 }
