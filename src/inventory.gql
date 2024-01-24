@@ -2,6 +2,7 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+"""A product Item of a product variant"""
 type ProductItem {
   """The uuid identifier of the product item"""
   _id: UUID!
@@ -13,9 +14,10 @@ type ProductItem {
   isInInventory: Boolean!
 }
 
-"""A simple UUID parser"""
+"""A universally unique identifier compliant UUID Scalar"""
 scalar UUID
 
+"""A connection of product items"""
 type ProductItemConnection {
   """The resulting items"""
   nodes: [ProductItem!]
@@ -40,11 +42,17 @@ type Query {
     orderBy: ProductItemOrder
   ): ProductItemConnection!
 
-  """Counts all product items of a product variant version"""
-  countProductItems(productVersionId: UUID!): Int!
+  """Counts all product items in inventory of a product variant version"""
+  countProductItems(
+    """UUID of product variant for stock count"""
+    productVersionId: UUID!
+  ): Int!
 
   """Retrieves a product item by id"""
-  productItem(_id: UUID!): ProductItem!
+  productItem(
+    """UUID of the user"""
+    _id: UUID!
+  ): ProductItem!
 }
 
 """Ordering options for product items"""
@@ -78,12 +86,15 @@ type Mutation {
   createProductItemBatch(createProductItemBatchInput: CreateProductItemBatchInput!): [ProductItem!]!
 
   """
-  Updates storage state or productVariantId of a specific productItem referenced with an Id
+  Updates storage state, productVariantId of a specific product item referenced with an Id
   """
   updateProductItem(updateProductItemInput: UpdateProductItemInput!): ProductItem!
 
   """Deletes a product item by id"""
-  deleteProductItem(_id: UUID!): ProductItem!
+  deleteProductItem(
+    """UUID of product item to delete"""
+    _id: UUID!
+  ): ProductItem!
 }
 
 """The input of a product item batch creation"""

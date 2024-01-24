@@ -53,10 +53,15 @@ export class InventoryResolver {
 
   @Query(() => Int, {
     name: 'countProductItems',
-    description: 'Counts all product items of a product variant version',
+    description:
+      'Counts all product items in inventory of a product variant version',
   })
   countByProductVariantId(
-    @Args('productVersionId', { type: () => UUID }) productVersionId: string,
+    @Args('productVersionId', {
+      type: () => UUID,
+      description: 'UUID of product variant for stock count',
+    })
+    productVersionId: string,
   ) {
     return this.inventoryService.countByProductVariantId(productVersionId);
   }
@@ -65,14 +70,17 @@ export class InventoryResolver {
     name: 'productItem',
     description: 'Retrieves a product item by id',
   })
-  findOne(@Args('_id', { type: () => UUID }) _id: string) {
+  findOne(
+    @Args('_id', { type: () => UUID, description: 'UUID of the user' })
+    _id: string,
+  ) {
     return this.inventoryService.findOne(_id);
   }
 
   @Mutation(() => ProductItem, {
     name: 'updateProductItem',
     description:
-      'Updates storage state or productVariantId of a specific productItem referenced with an Id',
+      'Updates storage state, productVariantId of a specific product item referenced with an Id',
   })
   updateProductItem(
     @Args('updateProductItemInput')
@@ -88,7 +96,13 @@ export class InventoryResolver {
     name: 'deleteProductItem',
     description: 'Deletes a product item by id',
   })
-  deleteroductItem(@Args('_id', { type: () => UUID }) _id: string) {
+  deleteProductItem(
+    @Args('_id', {
+      type: () => UUID,
+      description: 'UUID of product item to delete',
+    })
+    _id: string,
+  ) {
     return this.inventoryService.delete(_id);
   }
 }
