@@ -1,0 +1,39 @@
+# Docker Compose Configuration
+# visit https://docs.docker.com/compose/
+
+version: '3.8'
+services:
+  # app service for your backend
+  inventory:
+    restart: unless-stopped
+    container_name: inventory
+    healthcheck:
+      test: wget http://localhost:8080/graphiql || exit 1
+      interval: 1s
+      timeout: 10s
+      retries: 20
+      start_period: 3s
+    build:
+      context: ./
+      dockerfile: ./src/Dockerfile
+    environment:
+      DATABASE_URI: mongodb://inventory-db:27017
+    ports:
+      - '3000:3000'
+    depends_on:
+      - inventory-db
+  inventory-db:
+    build:
+      context: ./mongo
+      dockerfile: Dockerfile
+    container_name: inventory-db
+    hostname: inventory-db
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - inventory-db-data:/data/db
+    command: ["-f", "/etc/mongod.conf"]
+
+volumes:
+  inventory-db-data:
