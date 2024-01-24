@@ -16,27 +16,44 @@ type ProductItem {
 """A simple UUID parser"""
 scalar UUID
 
-type PaginatedProductItem {
+type ProductItemConnection {
+  """The resulting items"""
   nodes: [ProductItem!]
+
+  """The total amount of items in this connection"""
   totalCount: Int!
+
+  """Whether this connection has a next page"""
   hasNextPage: Boolean!
 }
 
 type Query {
-  productItems(findProductItemsInput: FindProductItemArgs!): PaginatedProductItem!
+  """Retrieves all product items"""
+  productItems(
+    """Number of items to skip"""
+    skip: Int = 0
+
+    """Number of items to return"""
+    first: Int = 2147483647
+
+    """Ordering"""
+    orderBy: ProductItemOrder = {field: ID, direction: ASC}
+  ): ProductItemConnection!
+
+  """Counts all product items of a product variant version"""
   countProductItems(productVersionId: UUID!): Int!
+
+  """Retrieves a product item by id"""
   productItem(_id: UUID!): ProductItem!
 }
 
-input FindProductItemArgs {
-  skip: Int! = 0
-  first: Int! = 25
-  orderBy: ProductItemOrder!
-}
-
+"""Ordering options for product items"""
 input ProductItemOrder {
-  field: ProductItemOrderField!
-  direction: OrderDirection!
+  """The field to order by"""
+  field: ProductItemOrderField = ID
+
+  """The direction to order by"""
+  direction: OrderDirection! = ASC
 }
 
 """The field to order Product Items by"""
@@ -55,11 +72,21 @@ enum OrderDirection {
 }
 
 type Mutation {
+  """
+  Adds a batch of product items with the specified productVartiantId of size number
+  """
   createProductItemBatch(createProductItemBatchInput: CreateProductItemBatchInput!): [ProductItem!]!
+
+  """
+  Updates storage state or productVariantId of a specific productItem referenced with an Id
+  """
   updateProductItem(updateProductItemInput: UpdateProductItemInput!): ProductItem!
-  removeProductItem(_id: UUID!): ProductItem!
+
+  """Deletes a product item by id"""
+  deleteProductItem(_id: UUID!): ProductItem!
 }
 
+"""The input of a product item batch creation"""
 input CreateProductItemBatchInput {
   """The product variant id of the product item"""
   productVariantId: UUID!
@@ -68,6 +95,7 @@ input CreateProductItemBatchInput {
   number: Float!
 }
 
+"""The input of a product item update"""
 input UpdateProductItemInput {
   """The product item identifier"""
   _id: UUID!

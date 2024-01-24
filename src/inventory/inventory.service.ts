@@ -71,7 +71,7 @@ export class InventoryService {
     return existingProductItems;
   }
 
-  async remove(_id: string) {
+  async delete(_id: string) {
     const deletedProductItem =
       await this.productItemModel.findByIdAndDelete(_id);
     return deletedProductItem;
