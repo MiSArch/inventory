@@ -23,9 +23,7 @@ services:
     depends_on:
       - inventory-db
   inventory-db:
-    build:
-      context: ./mongo
-      dockerfile: Dockerfile
+    image: mongo:6.0
     container_name: inventory-db
     hostname: inventory-db
     restart: always
@@ -34,6 +32,12 @@ services:
     volumes:
       - inventory-db-data:/data/db
     command: mongod --replSet rs0 --bind_ip_all
+  mongosetup:
+    image: mongo:6.0
+    depends_on:
+      - inventory-db
+    restart: "no"
+    entrypoint: [ "bash", "-c", "sleep 10 && mongosh --host inventory-db:27017 --eval 'rs.initiate()'"]
 
 volumes:
   inventory-db-data:
