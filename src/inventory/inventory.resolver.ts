@@ -34,6 +34,8 @@ export class InventoryResolver {
     @Args('createProductItemBatchInput')
     createProductItemBatchInput: CreateProductItemBatchInput,
   ) {
+    console.log('Resolving createProductItemBatch for ', createProductItemBatchInput)
+
     return this.inventoryService.createProductItemBatch(
       createProductItemBatchInput,
     );
@@ -47,6 +49,7 @@ export class InventoryResolver {
     @Args() args: FindProductItemArgs,
     @Info() info,
   ): Promise<IPaginatedType<ProductItem>> {
+    console.log('Resolving productItems for ', args)
     const { first, skip } = args;
 
     // get query keys to avoid unnecessary workload
@@ -84,6 +87,8 @@ export class InventoryResolver {
     @Args() args: FindProductItemsByProductVariantArgs,
     @Info() info,
   ) {
+    console.log('Resolving productItemsByProductVariant for ', args)
+
     const { first, skip, productVariantId } = args;
   
     // get query keys to avoid unnecessary workload
@@ -119,6 +124,8 @@ export class InventoryResolver {
     @Args('id', { type: () => UUID, description: 'UUID of the user' })
     id: string,
   ) {
+    console.log('Resolving findOne for ', id)
+
     return this.inventoryService.findOne(id);
   }
 
@@ -131,6 +138,8 @@ export class InventoryResolver {
     @Args('updateProductItemInput')
     updateProductItemInput: UpdateProductItemInput,
   ) {
+    console.log('Resolving updateProductItem for ', updateProductItemInput)
+
     return this.inventoryService.update(
       updateProductItemInput.id,
       updateProductItemInput,
@@ -148,16 +157,22 @@ export class InventoryResolver {
     })
     id: string,
   ) {
+    console.log('Resolving deleteProductItem for ', id)
+
     return this.inventoryService.delete(id);
   }
 
   @ResolveReference()
   resolveReference(reference: { __typename: string; id: string }): Promise<ProductItem> {
+    console.log('Resolving reference for ', reference.id)
+
     return this.inventoryService.findOne(reference.id);
   }
 
   @ResolveField()
   productVariant(@Parent() productItem: ProductItem) {
+    console.log('Resolving productvariant for ', productItem)
+
     return { __typename: 'ProductVariant', id: productItem.productVariant };
   }
 }

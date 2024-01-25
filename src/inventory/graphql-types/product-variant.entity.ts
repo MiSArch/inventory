@@ -6,6 +6,7 @@ import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 export class ProductVariant {
   @Field(() => UUID, {
     description: 'The uuid identifier of the product variant',
+    nullable: true
   })
   id: string;
 }
