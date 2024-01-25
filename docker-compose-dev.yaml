@@ -1,0 +1,34 @@
+services:
+  inventory:
+    extends:
+      file: docker-compose-base.yaml
+      service: inventory
+    build:
+      context: .
+      dockerfile: src/Dockerfile
+    ports:
+      - 3000:3000
+  inventory-db:
+    extends:
+      file: docker-compose-base.yaml
+      service: inventory-db
+    ports:
+      - "27017:27017"
+  mongosetup:
+    extends:
+      file: docker-compose-base.yaml
+      service: mongosetup
+  inventory-dapr:
+    extends:
+      file: docker-compose-base.yaml
+      service: inventory-dapr
+    volumes:
+      - "./.dapr/dapr-config-minimal.yaml:/config.yaml"
+      - "./.dapr/components:/components"
+  placement:
+    image: "daprio/dapr"
+    command: ["./placement", "-port", "50006"]
+    ports:
+      - 50006:50006
+volumes:
+  inventory-db-data:
