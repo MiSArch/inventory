@@ -20,9 +20,13 @@ import { ProductItemConnection } from 'src/inventory/graphql-types/product-item-
 import { ProductItemOrderField } from 'src/shared/enums/product-item-order-fields.enum';
 import { queryKeys } from 'src/shared/utils/query.info.utils';
 import { FindProductItemsByProductVariantArgs } from './dto/find-product-item-by-product-version-id.args';
+import { Logger } from '@nestjs/common';
 
 @Resolver(() => ProductItem)
 export class InventoryResolver {
+  // initialize logger with resolver context
+  private readonly logger = new Logger(InventoryResolver.name);
+  
   constructor(private readonly inventoryService: InventoryService) {}
 
   @Mutation(() => [ProductItem], {
@@ -34,7 +38,7 @@ export class InventoryResolver {
     @Args('createProductItemBatchInput')
     createProductItemBatchInput: CreateProductItemBatchInput,
   ) {
-    console.log('Resolving createProductItemBatch for ', createProductItemBatchInput)
+    this.logger.debug(`Resolving createProductItemBatch for ${JSON.stringify(createProductItemBatchInput)}`)
 
     return this.inventoryService.createProductItemBatch(
       createProductItemBatchInput,
@@ -49,7 +53,7 @@ export class InventoryResolver {
     @Args() args: FindProductItemArgs,
     @Info() info,
   ): Promise<IPaginatedType<ProductItem>> {
-    console.log('Resolving productItems for ', args)
+    this.logger.debug(`Resolving productItems for ${JSON.stringify(args)}`)
     const { first, skip } = args;
 
     // get query keys to avoid unnecessary workload
@@ -87,8 +91,7 @@ export class InventoryResolver {
     @Args() args: FindProductItemsByProductVariantArgs,
     @Info() info,
   ) {
-    console.log('Resolving productItemsByProductVariant for ', args)
-
+    this.logger.debug(`Resolving productItemsByProductVariant for ${JSON.stringify(args)}`)
     const { first, skip, productVariantId } = args;
   
     // get query keys to avoid unnecessary workload
@@ -124,7 +127,7 @@ export class InventoryResolver {
     @Args('id', { type: () => UUID, description: 'UUID of the user' })
     id: string,
   ) {
-    console.log('Resolving findOne for ', id)
+    this.logger.debug(`Resolving findOne for ${id}`)
 
     return this.inventoryService.findOne(id);
   }
@@ -138,7 +141,7 @@ export class InventoryResolver {
     @Args('updateProductItemInput')
     updateProductItemInput: UpdateProductItemInput,
   ) {
-    console.log('Resolving updateProductItem for ', updateProductItemInput)
+    this.logger.debug(`Resolving updateProductItem for ${JSON.stringify(updateProductItemInput)}`)
 
     return this.inventoryService.update(
       updateProductItemInput.id,
@@ -157,21 +160,21 @@ export class InventoryResolver {
     })
     id: string,
   ) {
-    console.log('Resolving deleteProductItem for ', id)
+    this.logger.debug(`Resolving deleteProductItem for${id}`)
 
     return this.inventoryService.delete(id);
   }
 
   @ResolveReference()
   resolveReference(reference: { __typename: string; id: string }): Promise<ProductItem> {
-    console.log('Resolving reference for ', reference.id)
+    this.logger.debug(`Resolving reference for ${reference.id}`)
 
     return this.inventoryService.findOne(reference.id);
   }
 
   @ResolveField()
   productVariant(@Parent() productItem: ProductItem) {
-    console.log('Resolving productvariant for ', productItem)
+    this.logger.debug(`Resolving productvariant for ${productItem}`)
 
     return { __typename: 'ProductVariant', id: productItem.productVariant };
   }
