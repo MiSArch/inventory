@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: src/Dockerfile
     ports:
-      - 3000:3000
+      - 8080:8080
   inventory-db:
     extends:
       file: docker-compose-base.yaml
