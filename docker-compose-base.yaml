@@ -8,7 +8,7 @@ services:
     restart: unless-stopped
     container_name: inventory
     healthcheck:
-      test: wget http://localhost:8080/graphql || exit 1
+      test: wget http://localhost:3000/graphql || exit 1
       interval: 1s
       timeout: 10s
       retries: 20
@@ -42,7 +42,7 @@ services:
         "--app-id",
         "inventory",
         "--app-port",
-        "50051",
+        "3000",
         "--app-protocol",
         "grpc",
         "--dapr-http-port",
