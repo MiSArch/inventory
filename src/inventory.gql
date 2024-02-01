@@ -6,7 +6,7 @@ type ProductVariant
   @key(fields: "id")
 {
   """The uuid identifier of the product variant"""
-  id: UUID
+  id: UUID!
 
   """A product item connection for referenced product items in stock"""
   productItems: ProductItemConnection
