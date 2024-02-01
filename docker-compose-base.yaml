@@ -8,7 +8,10 @@ services:
     restart: unless-stopped
     container_name: inventory
     healthcheck:
-      test: wget http://localhost:8080/graphql || exit 1
+      test: >
+        curl -f -X POST http://localhost:8080/graphql
+        -H "Content-Type: application/json"
+        --data '{ "query": "{ productItems{totalCount} }" }' || exit 1
       interval: 1s
       timeout: 10s
       retries: 20
