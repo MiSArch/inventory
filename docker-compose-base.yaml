@@ -39,6 +39,7 @@ services:
     entrypoint: [ "bash", "-c", "sleep 10 && mongosh --host inventory-db:27017 --eval 'rs.initiate()'"]
   inventory-dapr:
     image: "daprio/daprd:edge"
+    network_mode: "service:inventory"
     command:
       [
         "./daprd",
@@ -46,8 +47,6 @@ services:
         "inventory",
         "--app-port",
         "8080",
-        "--app-protocol",
-        "grpc",
         "--dapr-http-port",
         "3500",
         "-placement-host-address",
