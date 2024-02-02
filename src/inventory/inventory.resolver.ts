@@ -24,10 +24,11 @@ import { Logger } from '@nestjs/common';
 
 @Resolver(() => ProductItem)
 export class InventoryResolver {
-  // initialize logger with resolver context
-  private readonly logger = new Logger(InventoryResolver.name);
-  
-  constructor(private readonly inventoryService: InventoryService) {}
+  constructor(
+    private readonly inventoryService: InventoryService,
+    // initialize logger with resolver context
+    private readonly logger: Logger,
+  ) {}
 
   @Mutation(() => [ProductItem], {
     name: 'createProductItemBatch',
@@ -38,7 +39,11 @@ export class InventoryResolver {
     @Args('createProductItemBatchInput')
     createProductItemBatchInput: CreateProductItemBatchInput,
   ) {
-    this.logger.debug(`Resolving createProductItemBatch for ${JSON.stringify(createProductItemBatchInput)}`)
+    this.logger.log(
+      `Resolving createProductItemBatch for ${JSON.stringify(
+        createProductItemBatchInput,
+      )}`,
+    );
 
     return this.inventoryService.createProductItemBatch(
       createProductItemBatchInput,
@@ -53,7 +58,7 @@ export class InventoryResolver {
     @Args() args: FindProductItemArgs,
     @Info() info,
   ): Promise<IPaginatedType<ProductItem>> {
-    this.logger.debug(`Resolving productItems for ${JSON.stringify(args)}`)
+    this.logger.log(`Resolving productItems for ${JSON.stringify(args)}`);
     const { first, skip } = args;
 
     // get query keys to avoid unnecessary workload
@@ -91,15 +96,16 @@ export class InventoryResolver {
     @Args() args: FindProductItemsByProductVariantArgs,
     @Info() info,
   ) {
-    this.logger.debug(`Resolving productItemsByProductVariant for ${JSON.stringify(args)}`)
+    this.logger.log(
+      `Resolving productItemsByProductVariant for ${JSON.stringify(args)}`,
+    );
     const { first, skip, productVariantId } = args;
-  
+
     // get query keys to avoid unnecessary workload
     const query = queryKeys(info);
     let connection = new ProductItemConnection();
 
-    if (query.includes('nodes')) 
-    {
+    if (query.includes('nodes')) {
       // default order is ascending by id
       if (!args.orderBy) {
         args.orderBy = {
@@ -109,11 +115,13 @@ export class InventoryResolver {
       }
 
       // get nodes according to args
-      connection.nodes = await this.inventoryService.findByProductVariantId(args);
+      connection.nodes =
+        await this.inventoryService.findByProductVariantId(args);
     }
 
     if (query.includes('totalCount') || query.includes('hasNextPage')) {
-      connection.totalCount = await this.inventoryService.countByProductVariantId(productVariantId);
+      connection.totalCount =
+        await this.inventoryService.countByProductVariantId(productVariantId);
       connection.hasNextPage = skip + first < connection.totalCount;
     }
     return connection;
@@ -127,7 +135,7 @@ export class InventoryResolver {
     @Args('id', { type: () => UUID, description: 'UUID of the user' })
     id: string,
   ) {
-    this.logger.debug(`Resolving findOne for ${id}`)
+    this.logger.log(`Resolving findOne for ${id}`);
 
     return this.inventoryService.findOne(id);
   }
@@ -141,7 +149,11 @@ export class InventoryResolver {
     @Args('updateProductItemInput')
     updateProductItemInput: UpdateProductItemInput,
   ) {
-    this.logger.debug(`Resolving updateProductItem for ${JSON.stringify(updateProductItemInput)}`)
+    this.logger.log(
+      `Resolving updateProductItem for ${JSON.stringify(
+        updateProductItemInput,
+      )}`,
+    );
 
     return this.inventoryService.update(
       updateProductItemInput.id,
@@ -160,21 +172,24 @@ export class InventoryResolver {
     })
     id: string,
   ) {
-    this.logger.debug(`Resolving deleteProductItem for${id}`)
+    this.logger.log(`Resolving deleteProductItem for${id}`);
 
     return this.inventoryService.delete(id);
   }
 
   @ResolveReference()
-  resolveReference(reference: { __typename: string; id: string }): Promise<ProductItem> {
-    this.logger.debug(`Resolving reference for ${reference.id}`)
+  resolveReference(reference: {
+    __typename: string;
+    id: string;
+  }): Promise<ProductItem> {
+    this.logger.log(`Resolving reference for ${reference.id}`);
 
     return this.inventoryService.findOne(reference.id);
   }
 
   @ResolveField()
   productVariant(@Parent() productItem: ProductItem) {
-    this.logger.debug(`Resolving productvariant for ${productItem}`)
+    this.logger.log(`Resolving productvariant for ${productItem}`);
 
     return { __typename: 'ProductVariant', id: productItem.productVariant };
   }

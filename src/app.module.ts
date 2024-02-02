@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ConfigModule } from '@nestjs/config';
 import {
@@ -27,5 +27,6 @@ import { MongooseModule } from '@nestjs/mongoose';
       dbName: process.env.DATABASE_NAME,
     }),
   ],
+  providers: [Logger],
 })
 export class AppModule {}

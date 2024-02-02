@@ -1,8 +1,9 @@
+import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
 
 // Create transports instance
-const transports = [
+const devTransports = [
   new winston.transports.Console({
     level: 'debug',
     format: winston.format.combine(
@@ -13,6 +14,9 @@ const transports = [
       ),
     ),
   }),
+];
+
+const prodTransports = [
   new winston.transports.DailyRotateFile({
     level: 'error',
     filename: 'logs/inventory-%DATE%-error.log',
@@ -31,7 +35,7 @@ const transports = [
   }),
 ];
 
+const instanceTransports = (process.env.NODE_ENV === 'production') ? prodTransports : devTransports;
+
 // Create and export the logger instance
-export const logger = winston.createLogger({
-  transports,
-});
+export const logger = WinstonModule.createLogger({ transports: instanceTransports });

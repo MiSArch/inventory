@@ -9,11 +9,10 @@ import { FindProductItemsByProductVariantArgs } from './dto/find-product-item-by
 
 @Injectable()
 export class InventoryService {
-  // initialize logger with service context
-  private readonly logger = new Logger(InventoryService.name);
-
   constructor(
     @InjectModel(ProductItem.name) private productItemModel: Model<ProductItem>,
+    // initialize logger with service context
+    private readonly logger: Logger,
   ) {}
 
   async createProductItemBatch(
