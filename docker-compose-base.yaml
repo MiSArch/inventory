@@ -6,7 +6,6 @@ services:
   # app service for your backend
   inventory:
     restart: unless-stopped
-    container_name: inventory
     healthcheck:
       test: >
         curl -f -X POST http://localhost:8080/graphql
@@ -25,7 +24,6 @@ services:
       - inventory-db
   inventory-db:
     image: mongo:6.0
-    container_name: inventory-db
     hostname: inventory-db
     restart: always
     volumes:
