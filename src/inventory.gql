@@ -166,5 +166,5 @@ input UpdateProductItemInput {
   productVariantId: UUID!
 
   """The inventory state of the product item"""
-  isInInventory: ProductItemStatus!
+  inventoryStatus: ProductItemStatus!
 }

@@ -17,5 +17,5 @@ export class UpdateProductItemInput {
   @Field(() => ProductItemStatus, {
     description: 'The inventory state of the product item',
   })
-  isInInventory: ProductItemStatus;
+  inventoryStatus: ProductItemStatus;
 }

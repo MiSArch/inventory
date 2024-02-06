@@ -170,6 +170,7 @@ export class InventoryService {
     const productItem = await this.productItemModel.findOneAndUpdate(
       { productVariant, inventoryStatus: ProductItemStatus.IN_STORAGE },
       { inventoryStatus: ProductItemStatus.RESERVED },
+      { new: true },
     )
 
     if (!productItem) {

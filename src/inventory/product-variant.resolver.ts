@@ -4,6 +4,7 @@ import { InventoryService } from './inventory.service';
 import { ProductItemConnection } from './graphql-types/product-item-connection.dto';
 import { ProductItemOrderField } from 'src/shared/enums/product-item-order-fields.enum';
 import { Logger } from '@nestjs/common';
+import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 
 @Resolver(() => ProductVariant)
 export class ProductVariantResolver {
@@ -24,7 +25,10 @@ export class ProductVariantResolver {
       },
     });
 
-    const count = await this.inventoryService.countByProductVariant(productVariant.id);
+    const count = await this.inventoryService.countByProductVariant(
+      productVariant.id,
+      ProductItemStatus.IN_STORAGE,
+    );
     connection.totalCount = count;
     connection.hasNextPage = connection.nodes.length < count;
     return connection;
