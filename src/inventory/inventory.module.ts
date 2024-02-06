@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { InventoryResolver } from './inventory.resolver';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -11,6 +11,6 @@ import { ProductVariantResolver } from './product-variant.resolver';
       { name: ProductItem.name, schema: ProductItemSchema },
     ]),
   ],
-  providers: [InventoryResolver, InventoryService, ProductVariantResolver],
+  providers: [InventoryResolver, InventoryService, ProductVariantResolver, Logger],
 })
 export class InventoryModule {}

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ConfigModule } from '@nestjs/config';
 import {
@@ -11,7 +11,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
+    // For Configuration from environment variables
     ConfigModule.forRoot({ isGlobal: true }),
+    // For GraphQL Federation v2
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,
       resolvers: { UUID: UUID },
@@ -20,9 +22,11 @@ import { MongooseModule } from '@nestjs/mongoose';
       },
     }),
     InventoryModule,
+    // For data persistence
     MongooseModule.forRoot(process.env.DATABASE_URI, {
       dbName: process.env.DATABASE_NAME,
     }),
   ],
+  providers: [Logger],
 })
 export class AppModule {}
