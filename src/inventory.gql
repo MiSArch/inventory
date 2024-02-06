@@ -54,8 +54,8 @@ type Query {
     orderBy: ProductItemOrder
   ): ProductItemConnection!
 
-  """Returns product items in inventory of a product variant version"""
-  productItemsByProductVariantId(
+  """Returns product items in inventory of a product variant"""
+  productItemsByProductVariant(
     """UUID of product variant for stock count"""
     productVariantId: UUID!
 
@@ -104,12 +104,12 @@ type Mutation {
   """
   Adds a batch of product items with the specified productVartiantId of size number
   """
-  createProductItemBatch(createProductItemBatchInput: CreateProductItemBatchInput!): [ProductItem!]!
+  createProductItemBatch(input: CreateProductItemBatchInput!): [ProductItem!]!
 
   """
-  Updates storage state, productVariantId of a specific product item referenced with an Id
+  Updates storage state, productVariant of a specific product item referenced with an Id
   """
-  updateProductItem(updateProductItemInput: UpdateProductItemInput!): ProductItem!
+  updateProductItem(input: UpdateProductItemInput!): ProductItem!
 
   """Deletes a product item by id"""
   deleteProductItem(

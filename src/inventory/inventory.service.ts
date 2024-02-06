@@ -31,6 +31,7 @@ export class InventoryService {
       for (let i = 0; i < createProductItemBatchInput.number; i++) {
         const newProductItem = new this.productItemModel({
           ...createProductItemBatchInput,
+          productVariant: createProductItemBatchInput.productVariantId,
         });
         const savedProductItem = await newProductItem.save({ session });
         productItems.push(savedProductItem);
@@ -85,7 +86,13 @@ export class InventoryService {
     );
 
     const existingProductItems = await this.productItemModel
-      .findOneAndUpdate({ _id }, updateProductItemInput)
+      .findOneAndUpdate(
+        { _id },
+        {
+          ...updateProductItemInput,
+          productVariant: updateProductItemInput.productVariantId,
+        },
+      )
       .setOptions({ overwrite: true, new: true });
 
     if (!existingProductItems) {
@@ -111,10 +118,10 @@ export class InventoryService {
     return deletedProductItem;
   }
 
-  async countByProductVariantId(productVariantId: string): Promise<number> {
-    this.logger.debug(`{countByProductVariantId} query: ${productVariantId}`);
+  async countByProductVariant(productVariant: string): Promise<number> {
+    this.logger.debug(`{countByProductVariant} query: ${productVariant}`);
     const count = await this.productItemModel.countDocuments({
-      productVariantId,
+      productVariant,
       isInInventory: true,
     });
 
@@ -123,17 +130,17 @@ export class InventoryService {
     return count;
   }
 
-  async findByProductVariantId(
+  async findByProductVariant(
     args: FindProductItemsByProductVariantArgs,
   ): Promise<ProductItem[]> {
     const { first, skip, orderBy, productVariantId } = args;
     this.logger.debug(
-      `{findByProductVariantId} query: ${JSON.stringify(args)}`,
+      `{findByProductVariant} query: ${JSON.stringify(args)}`,
     );
 
     const productItems = await this.productItemModel
       .find({
-        productVariantId,
+        productVariant: productVariantId,
         isInInventory: true,
       })
       .limit(first)

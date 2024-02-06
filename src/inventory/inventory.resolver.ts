@@ -36,7 +36,7 @@ export class InventoryResolver {
       'Adds a batch of product items with the specified productVartiantId of size number',
   })
   createProductItemBatch(
-    @Args('createProductItemBatchInput')
+    @Args('input')
     createProductItemBatchInput: CreateProductItemBatchInput,
   ) {
     this.logger.log(
@@ -88,18 +88,19 @@ export class InventoryResolver {
   }
 
   @Query(() => ProductItemConnection, {
-    name: 'productItemsByProductVariantId',
+    name: 'productItemsByProductVariant',
     description:
-      'Returns product items in inventory of a product variant version',
+      'Returns product items in inventory of a product variant',
   })
-  async findByProductVariantId(
+  async findByProductVariant(
     @Args() args: FindProductItemsByProductVariantArgs,
     @Info() info,
   ) {
+    const { first, skip, productVariantId } = args;
+  
     this.logger.log(
       `Resolving productItemsByProductVariant for ${JSON.stringify(args)}`,
     );
-    const { first, skip, productVariantId } = args;
 
     // get query keys to avoid unnecessary workload
     const query = queryKeys(info);
@@ -115,13 +116,11 @@ export class InventoryResolver {
       }
 
       // get nodes according to args
-      connection.nodes =
-        await this.inventoryService.findByProductVariantId(args);
+      connection.nodes = await this.inventoryService.findByProductVariant(args);
     }
 
     if (query.includes('totalCount') || query.includes('hasNextPage')) {
-      connection.totalCount =
-        await this.inventoryService.countByProductVariantId(productVariantId);
+      connection.totalCount = await this.inventoryService.countByProductVariant(productVariantId);
       connection.hasNextPage = skip + first < connection.totalCount;
     }
     return connection;
@@ -143,10 +142,10 @@ export class InventoryResolver {
   @Mutation(() => ProductItem, {
     name: 'updateProductItem',
     description:
-      'Updates storage state, productVariantId of a specific product item referenced with an Id',
+      'Updates storage state, productVariant of a specific product item referenced with an Id',
   })
   updateProductItem(
-    @Args('updateProductItemInput')
+    @Args('input')
     updateProductItemInput: UpdateProductItemInput,
   ) {
     this.logger.log(
