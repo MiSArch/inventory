@@ -79,17 +79,17 @@ export class InventoryResolver {
   }
 
   @Query(() => ProductItemConnection, {
-    name: 'productItemsByProductVariantId',
+    name: 'productItemsByProductVariant',
     description:
-      'Returns product items in inventory of a product variant version',
+      'Returns product items in inventory of a product variant',
   })
-  async findByProductVariantId(
+  async findByProductVariant(
     @Args() args: FindProductItemsByProductVariantArgs,
     @Info() info,
   ) {
     console.log('Resolving productItemsByProductVariant for ', args)
 
-    const { first, skip, productVariantId } = args;
+    const { first, skip, productVariant } = args;
   
     // get query keys to avoid unnecessary workload
     const query = queryKeys(info);
@@ -106,11 +106,11 @@ export class InventoryResolver {
       }
 
       // get nodes according to args
-      connection.nodes = await this.inventoryService.findByProductVariantId(args);
+      connection.nodes = await this.inventoryService.findByProductVariant(args);
     }
 
     if (query.includes('totalCount') || query.includes('hasNextPage')) {
-      connection.totalCount = await this.inventoryService.countByProductVariantId(productVariantId);
+      connection.totalCount = await this.inventoryService.countByProductVariant(productVariant);
       connection.hasNextPage = skip + first < connection.totalCount;
     }
     return connection;
@@ -132,7 +132,7 @@ export class InventoryResolver {
   @Mutation(() => ProductItem, {
     name: 'updateProductItem',
     description:
-      'Updates storage state, productVariantId of a specific product item referenced with an Id',
+      'Updates storage state, productVariant of a specific product item referenced with an Id',
   })
   updateProductItem(
     @Args('updateProductItemInput')

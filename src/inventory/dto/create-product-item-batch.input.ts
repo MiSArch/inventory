@@ -6,7 +6,7 @@ export class CreateProductItemBatchInput {
   @Field(() => UUID, {
     description: 'The product variant id of the product item',
   })
-  productVariantId: string;
+  productVariant: string;
 
   @Field(() => Number, {
     description: 'The number of products to add',

@@ -74,22 +74,22 @@ export class InventoryService {
     return deletedProductItem;
   }
 
-  async countByProductVariantId(productVariantId: string): Promise<number> {
+  async countByProductVariant(productVariant: string): Promise<number> {
     return this.productItemModel.countDocuments({
-      productVariantId,
+      productVariant,
       isInInventory: true,
     });
   }
 
-  async findByProductVariantId(
+  async findByProductVariant(
     args: FindProductItemsByProductVariantArgs,
   ): Promise<ProductItem[]> {
-    const { first, skip, orderBy, productVariantId } = args;
+    const { first, skip, orderBy, productVariant } = args;
     console.log('args', args);
 
     return this.productItemModel
       .find({
-        productVariantId,
+        productVariant,
         isInInventory: true,
       })
       .limit(first)
