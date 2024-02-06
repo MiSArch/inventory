@@ -17,7 +17,7 @@ export class ProductVariantResolver {
     this.logger.log('Resolving Product Items for ProductVariant: ', productVariant)
     const connection = new ProductItemConnection();
     connection.nodes = await this.inventoryService.findByProductVariant({
-      productVariant: productVariant.id,
+      productVariantId: productVariant.id,
       orderBy: {
         field: ProductItemOrderField.ID,
         direction: 1,

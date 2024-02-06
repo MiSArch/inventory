@@ -11,7 +11,7 @@ export class UpdateProductItemInput {
   @Field(() => UUID, {
     description: 'The product variant id of the product item',
   })
-  productVariant: string;
+  productVariantId: string;
 
   @Field(() => Boolean, {
     description: 'The inventory state of the product item',

@@ -7,7 +7,8 @@ import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 @ArgsType()
 export class FindProductItemsByProductVariantArgs {
   @Field(() => UUID, { description: 'UUID of product variant for stock count' })
-  productVariant: string;
+  productVariantId: string;
+  
   @Field(() => Int, {
     description: 'Number of items to skip',
     nullable: true,

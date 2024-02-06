@@ -57,7 +57,7 @@ type Query {
   """Returns product items in inventory of a product variant"""
   productItemsByProductVariant(
     """UUID of product variant for stock count"""
-    productVariant: UUID!
+    productVariantId: UUID!
 
     """Number of items to skip"""
     skip: Int = 0
@@ -104,12 +104,12 @@ type Mutation {
   """
   Adds a batch of product items with the specified productVartiantId of size number
   """
-  createProductItemBatch(createProductItemBatchInput: CreateProductItemBatchInput!): [ProductItem!]!
+  createProductItemBatch(input: CreateProductItemBatchInput!): [ProductItem!]!
 
   """
   Updates storage state, productVariant of a specific product item referenced with an Id
   """
-  updateProductItem(updateProductItemInput: UpdateProductItemInput!): ProductItem!
+  updateProductItem(input: UpdateProductItemInput!): ProductItem!
 
   """Deletes a product item by id"""
   deleteProductItem(
@@ -121,7 +121,7 @@ type Mutation {
 """The input of a product item batch creation"""
 input CreateProductItemBatchInput {
   """The product variant id of the product item"""
-  productVariant: UUID!
+  productVariantId: UUID!
 
   """The number of products to add"""
   number: Float!
@@ -133,7 +133,7 @@ input UpdateProductItemInput {
   id: UUID!
 
   """The product variant id of the product item"""
-  productVariant: UUID!
+  productVariantId: UUID!
 
   """The inventory state of the product item"""
   isInInventory: Boolean!

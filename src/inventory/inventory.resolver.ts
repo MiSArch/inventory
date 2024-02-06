@@ -36,7 +36,7 @@ export class InventoryResolver {
       'Adds a batch of product items with the specified productVartiantId of size number',
   })
   createProductItemBatch(
-    @Args('createProductItemBatchInput')
+    @Args('input')
     createProductItemBatchInput: CreateProductItemBatchInput,
   ) {
     this.logger.log(
@@ -96,7 +96,7 @@ export class InventoryResolver {
     @Args() args: FindProductItemsByProductVariantArgs,
     @Info() info,
   ) {
-    const { first, skip, productVariant } = args;
+    const { first, skip, productVariantId } = args;
   
     this.logger.log(
       `Resolving productItemsByProductVariant for ${JSON.stringify(args)}`,
@@ -120,7 +120,7 @@ export class InventoryResolver {
     }
 
     if (query.includes('totalCount') || query.includes('hasNextPage')) {
-      connection.totalCount = await this.inventoryService.countByProductVariant(productVariant);
+      connection.totalCount = await this.inventoryService.countByProductVariant(productVariantId);
       connection.hasNextPage = skip + first < connection.totalCount;
     }
     return connection;
@@ -145,7 +145,7 @@ export class InventoryResolver {
       'Updates storage state, productVariant of a specific product item referenced with an Id',
   })
   updateProductItem(
-    @Args('updateProductItemInput')
+    @Args('input')
     updateProductItemInput: UpdateProductItemInput,
   ) {
     this.logger.log(

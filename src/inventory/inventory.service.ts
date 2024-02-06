@@ -31,6 +31,7 @@ export class InventoryService {
       for (let i = 0; i < createProductItemBatchInput.number; i++) {
         const newProductItem = new this.productItemModel({
           ...createProductItemBatchInput,
+          productVariant: createProductItemBatchInput.productVariantId,
         });
         const savedProductItem = await newProductItem.save({ session });
         productItems.push(savedProductItem);
@@ -85,7 +86,13 @@ export class InventoryService {
     );
 
     const existingProductItems = await this.productItemModel
-      .findOneAndUpdate({ _id }, updateProductItemInput)
+      .findOneAndUpdate(
+        { _id },
+        {
+          ...updateProductItemInput,
+          productVariant: updateProductItemInput.productVariantId,
+        },
+      )
       .setOptions({ overwrite: true, new: true });
 
     if (!existingProductItems) {
@@ -126,14 +133,14 @@ export class InventoryService {
   async findByProductVariant(
     args: FindProductItemsByProductVariantArgs,
   ): Promise<ProductItem[]> {
-    const { first, skip, orderBy, productVariant } = args;
+    const { first, skip, orderBy, productVariantId } = args;
     this.logger.debug(
       `{findByProductVariant} query: ${JSON.stringify(args)}`,
     );
 
     const productItems = await this.productItemModel
       .find({
-        productVariant,
+        productVariant: productVariantId,
         isInInventory: true,
       })
       .limit(first)
