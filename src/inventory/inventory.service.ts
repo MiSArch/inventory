@@ -6,6 +6,7 @@ import { ProductItem } from './entities/product-item.entity';
 import { Model } from 'mongoose';
 import { FindProductItemArgs } from './dto/find-product-item.input';
 import { FindProductItemsByProductVariantArgs } from './dto/find-product-item-by-product-version-id.args';
+import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 
 @Injectable()
 export class InventoryService {
@@ -118,11 +119,11 @@ export class InventoryService {
     return deletedProductItem;
   }
 
-  async countByProductVariant(productVariant: string): Promise<number> {
+  async countByProductVariant(productVariant: string, status: ProductItemStatus): Promise<number> {
     this.logger.debug(`{countByProductVariant} query: ${productVariant}`);
     const count = await this.productItemModel.countDocuments({
       productVariant,
-      isInInventory: true,
+      inventoryStatus: status,
     });
 
     this.logger.debug(`{countByProductVariantId} returning ${count}`);
@@ -141,7 +142,7 @@ export class InventoryService {
     const productItems = await this.productItemModel
       .find({
         productVariant: productVariantId,
-        isInInventory: true,
+        inventoryStatus: ProductItemStatus.IN_STORAGE,
       })
       .limit(first)
       .skip(skip)
@@ -163,4 +164,19 @@ export class InventoryService {
   logError(functionName: string, error: Error) {
     this.logger.error(`{${functionName}} ${error.message} ${error.stack}`);
   }
+  
+  async reserveProductItem(productVariant: string) {
+    // find a product item of the required product variant
+    const productItem = await this.productItemModel.findOneAndUpdate(
+      { productVariant, inventoryStatus: ProductItemStatus.IN_STORAGE },
+      { inventoryStatus: ProductItemStatus.RESERVED },
+    )
+
+    if (!productItem) {
+      throw new NotFoundException(`No product items available for product variant "${productVariant}"`);
+    }
+
+    return productItem;
+  }
+
 }

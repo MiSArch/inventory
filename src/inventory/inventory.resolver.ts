@@ -21,6 +21,7 @@ import { ProductItemOrderField } from 'src/shared/enums/product-item-order-field
 import { queryKeys } from 'src/shared/utils/query.info.utils';
 import { FindProductItemsByProductVariantArgs } from './dto/find-product-item-by-product-version-id.args';
 import { Logger } from '@nestjs/common';
+import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 
 @Resolver(() => ProductItem)
 export class InventoryResolver {
@@ -120,7 +121,11 @@ export class InventoryResolver {
     }
 
     if (query.includes('totalCount') || query.includes('hasNextPage')) {
-      connection.totalCount = await this.inventoryService.countByProductVariant(productVariantId);
+      connection.totalCount =
+        await this.inventoryService.countByProductVariant(
+          productVariantId,
+          ProductItemStatus.IN_STORAGE,
+        );
       connection.hasNextPage = skip + first < connection.totalCount;
     }
     return connection;
@@ -174,6 +179,25 @@ export class InventoryResolver {
     this.logger.log(`Resolving deleteProductItem for${id}`);
 
     return this.inventoryService.delete(id);
+  }
+
+  @Mutation(() => ProductItem, {
+    name: 'reserveProductItem',
+    description: 'Reserves a product item of a chosen product variant',
+  })
+  reserveProductItem(
+    @Args('productVariant', {
+      type: () => UUID,
+      description: 'UUID of product variant to reserve',
+    })
+    productVariant: string,
+  ) {
+    this.logger.log(
+      'Resolving reserveProductItem for product variant: ',
+      productVariant,
+    );
+
+    return this.inventoryService.reserveProductItem(productVariant);
   }
 
   @ResolveReference()
