@@ -8,6 +8,8 @@ import {
 import { InventoryModule } from './inventory/inventory.module';
 import { UUID } from './shared/scalars/CustomUuidScalar';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ProductVariantPartialModule } from './product-variant-partial/product-variant-partial.module';
+import { EventModule } from './events/event.module';
 
 @Module({
   imports: [
@@ -21,12 +23,13 @@ import { MongooseModule } from '@nestjs/mongoose';
         federation: 2,
       },
     }),
-    InventoryModule,
     // For data persistence
     MongooseModule.forRoot(process.env.DATABASE_URI, {
       dbName: process.env.DATABASE_NAME,
     }),
-  ],
-  providers: [Logger],
+    ProductVariantPartialModule,
+    InventoryModule,
+    EventModule,
+  ]
 })
 export class AppModule {}
