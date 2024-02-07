@@ -6,6 +6,7 @@ import { ProductItem } from './entities/product-item.entity';
 import { Model } from 'mongoose';
 import { FindProductItemArgs } from './dto/find-product-item.input';
 import { FindProductItemsByProductVariantArgs } from './dto/find-product-item-by-product-version-id.args';
+import { ProductVariantPartialService } from 'src/product-variant-partial/product-variant-partial.service';
 
 @Injectable()
 export class InventoryService {
@@ -13,6 +14,8 @@ export class InventoryService {
     @InjectModel(ProductItem.name) private productItemModel: Model<ProductItem>,
     // initialize logger with service context
     private readonly logger: Logger,
+    // inject ProductVariantPartialService for productVariant checks
+    private readonly productVariantPartialService: ProductVariantPartialService,
   ) {}
 
   async createProductItemBatch(
@@ -23,6 +26,16 @@ export class InventoryService {
         createProductItemBatchInput,
       )}`,
     );
+
+    if (
+      !this.productVariantPartialService.findOne(
+        createProductItemBatchInput.productVariantId,
+      )
+    ) {
+      throw new NotFoundException(
+        `ProductVariant with ID "${createProductItemBatchInput.productVariantId}" not found`,
+      );
+    }
 
     const session = await this.productItemModel.startSession();
     session.startTransaction();
@@ -84,6 +97,16 @@ export class InventoryService {
     this.logger.debug(
       `{update} for ${_id} input: ${JSON.stringify(updateProductItemInput)}`,
     );
+
+    if (
+      !this.productVariantPartialService.findOne(
+        updateProductItemInput.productVariantId,
+      )
+    ) {
+      throw new NotFoundException(
+        `ProductVariant with ID "${updateProductItemInput.productVariantId}" not found`,
+      );
+    }
 
     const existingProductItems = await this.productItemModel
       .findOneAndUpdate(

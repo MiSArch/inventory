@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Logger, Post } from '@nestjs/common';
-import { ProductVariantStubService } from 'src/product-variant-stub/product-variant-stub.service';
+import { ProductVariantPartialService } from 'src/product-variant-partial/product-variant-partial.service';
 
 @Controller()
 export class EventController {
 
   constructor(
-    private readonly productVariantService: ProductVariantStubService,
+    private readonly productVariantService: ProductVariantPartialService,
     private readonly logger: Logger  
   ) {}
 

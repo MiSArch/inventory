@@ -1,9 +1,9 @@
 import { Logger, Module } from '@nestjs/common';
 import { EventController } from './event.controller';
-import { ProductVariantStubModule } from 'src/product-variant-stub/product-variant-stub.module';
+import { ProductVariantPartialModule } from 'src/product-variant-partial/product-variant-partial.module';
 
 @Module({
-  imports: [ProductVariantStubModule],
+  imports: [ProductVariantPartialModule],
   providers: [Logger],
   controllers: [EventController],
 })

@@ -8,7 +8,7 @@ import {
 import { InventoryModule } from './inventory/inventory.module';
 import { UUID } from './shared/scalars/CustomUuidScalar';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ProductVariantStubModule } from './product-variant-stub/product-variant-stub.module';
+import { ProductVariantPartialModule } from './product-variant-partial/product-variant-partial.module';
 import { EventModule } from './events/event.module';
 
 @Module({
@@ -27,7 +27,7 @@ import { EventModule } from './events/event.module';
     MongooseModule.forRoot(process.env.DATABASE_URI, {
       dbName: process.env.DATABASE_NAME,
     }),
-    ProductVariantStubModule,
+    ProductVariantPartialModule,
     InventoryModule,
     EventModule,
   ]
