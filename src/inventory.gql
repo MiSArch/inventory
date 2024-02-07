@@ -141,11 +141,8 @@ type Mutation {
     id: UUID!
   ): ProductItem!
 
-  """Reserves a product item of a chosen product variant"""
-  reserveProductItem(
-    """UUID of product variant to reserve"""
-    productVariant: UUID!
-  ): ProductItem!
+  """Reserves a batch of product items of a chosen product variant"""
+  reserveProductItemBatch(input: ReserveProductItemsBatchInput!): [ProductItem!]!
 }
 
 """The input of a product item batch creation"""
@@ -167,4 +164,13 @@ input UpdateProductItemInput {
 
   """The inventory state of the product item"""
   inventoryStatus: ProductItemStatus!
+}
+
+"""The input to reserve a batch of product items"""
+input ReserveProductItemsBatchInput {
+  """The product variant id of the product item"""
+  productVariantId: UUID!
+
+  """The number of product items to reserve"""
+  number: Float!
 }

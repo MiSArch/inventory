@@ -7,6 +7,7 @@ import { Model } from 'mongoose';
 import { FindProductItemArgs } from './dto/find-product-item.input';
 import { FindProductItemsByProductVariantArgs } from './dto/find-product-item-by-product-version-id.args';
 import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
+import { ReserveProductItemsBatchInput } from './dto/reserve-product-items-batch.input';
 
 @Injectable()
 export class InventoryService {
@@ -165,19 +166,32 @@ export class InventoryService {
     this.logger.error(`{${functionName}} ${error.message} ${error.stack}`);
   }
   
-  async reserveProductItem(productVariant: string) {
-    // find a product item of the required product variant
-    const productItem = await this.productItemModel.findOneAndUpdate(
-      { productVariant, inventoryStatus: ProductItemStatus.IN_STORAGE },
-      { inventoryStatus: ProductItemStatus.RESERVED },
-      { new: true },
-    )
-
-    if (!productItem) {
-      throw new NotFoundException(`No product items available for product variant "${productVariant}"`);
+  // function to reserve a batch of product items for an order
+  async reserveProductItemBatch(reserveInput: ReserveProductItemsBatchInput): Promise<ProductItem[]> {
+    // find the product items of the required product variant
+    const productItems = await this.productItemModel
+      .find({
+        productVariant: reserveInput.productVariantId,
+        inventoryStatus: ProductItemStatus.IN_STORAGE,
+      })
+      .limit(reserveInput.number);
+    
+    if (productItems.length < reserveInput.number) {
+      throw new NotFoundException(
+        `Not enough product items available for product variant "${reserveInput.productVariantId}"`,
+      );
     }
 
-    return productItem;
+    // set the inventory status of the selected product items to reserved
+    const ids = productItems.map((productItem) => productItem._id);
+    const updatedItems = await this.productItemModel.updateMany(
+      { _id: { $in: ids } },
+      { $set: { inventoryStatus: ProductItemStatus.RESERVED } },
+      { multi: true, upsert: true },
+    );
+
+    // return the reserved product items
+    return this.productItemModel.find({ _id: { $in: ids } });
   }
 
 }

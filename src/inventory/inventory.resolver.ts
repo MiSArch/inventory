@@ -22,6 +22,7 @@ import { queryKeys } from 'src/shared/utils/query.info.utils';
 import { FindProductItemsByProductVariantArgs } from './dto/find-product-item-by-product-version-id.args';
 import { Logger } from '@nestjs/common';
 import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
+import { ReserveProductItemsBatchInput } from './dto/reserve-product-items-batch.input';
 
 @Resolver(() => ProductItem)
 export class InventoryResolver {
@@ -90,15 +91,14 @@ export class InventoryResolver {
 
   @Query(() => ProductItemConnection, {
     name: 'productItemsByProductVariant',
-    description:
-      'Returns product items in inventory of a product variant',
+    description: 'Returns product items in inventory of a product variant',
   })
   async findByProductVariant(
     @Args() args: FindProductItemsByProductVariantArgs,
     @Info() info,
   ) {
     const { first, skip, productVariantId } = args;
-  
+
     this.logger.log(
       `Resolving productItemsByProductVariant for ${JSON.stringify(args)}`,
     );
@@ -121,11 +121,10 @@ export class InventoryResolver {
     }
 
     if (query.includes('totalCount') || query.includes('hasNextPage')) {
-      connection.totalCount =
-        await this.inventoryService.countByProductVariant(
-          productVariantId,
-          ProductItemStatus.IN_STORAGE,
-        );
+      connection.totalCount = await this.inventoryService.countByProductVariant(
+        productVariantId,
+        ProductItemStatus.IN_STORAGE,
+      );
       connection.hasNextPage = skip + first < connection.totalCount;
     }
     return connection;
@@ -181,23 +180,23 @@ export class InventoryResolver {
     return this.inventoryService.delete(id);
   }
 
-  @Mutation(() => ProductItem, {
-    name: 'reserveProductItem',
-    description: 'Reserves a product item of a chosen product variant',
+  @Mutation(() => [ProductItem], {
+    name: 'reserveProductItemBatch',
+    description:
+      'Reserves a batch of product items of a chosen product variant',
   })
-  reserveProductItem(
-    @Args('productVariant', {
-      type: () => UUID,
-      description: 'UUID of product variant to reserve',
-    })
-    productVariant: string,
+  reserveProductItemBatch(
+    @Args('input')
+    reserveProductitemsBatch: ReserveProductItemsBatchInput,
   ) {
     this.logger.log(
-      'Resolving reserveProductItem for product variant: ',
-      productVariant,
+      'Resolving reserveProductItemBatch for input: ',
+      reserveProductitemsBatch,
     );
 
-    return this.inventoryService.reserveProductItem(productVariant);
+    return this.inventoryService.reserveProductItemBatch(
+      reserveProductitemsBatch,
+    );
   }
 
   @ResolveReference()
