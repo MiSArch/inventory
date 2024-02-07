@@ -20,9 +20,4 @@ export class ProductVariantStubService {
     this.logger.log(`{findOne} input: ${id}`);
     return this.productVariantStubModel.findById(id);
   }
-
-  async remove(id: string) {
-    this.logger.log(`{remove} input: ${id}`);
-    return this.productVariantStubModel.findByIdAndDelete(id)
-  }
 }

@@ -11,5 +11,6 @@ import { InventoryModule } from 'src/inventory/inventory.module';
     ]),
   ],
   providers: [ProductVariantStubService, Logger],
+  exports: [ProductVariantStubService],
 })
 export class ProductVariantStubModule {}
