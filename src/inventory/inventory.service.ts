@@ -28,9 +28,9 @@ export class InventoryService {
     );
 
     if (
-      !this.productVariantPartialService.findOne(
+      !(await this.productVariantPartialService.findOne(
         createProductItemBatchInput.productVariantId,
-      )
+      ))
     ) {
       throw new NotFoundException(
         `ProductVariant with ID "${createProductItemBatchInput.productVariantId}" not found`,
@@ -99,9 +99,9 @@ export class InventoryService {
     );
 
     if (
-      !this.productVariantPartialService.findOne(
+      !(await this.productVariantPartialService.findOne(
         updateProductItemInput.productVariantId,
-      )
+      ))
     ) {
       throw new NotFoundException(
         `ProductVariant with ID "${updateProductItemInput.productVariantId}" not found`,
