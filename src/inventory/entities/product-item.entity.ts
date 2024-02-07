@@ -3,6 +3,7 @@ import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 import { v4 as uuidv4 } from 'uuid';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ProductVariant } from '../graphql-types/product-variant.entity';
+import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 
 @ObjectType({ description: 'A product Item of a product variant' })
 @Schema({
@@ -27,11 +28,11 @@ export class ProductItem {
   })
   productVariant: ProductVariant;
 
-  @Prop({ required: true, default: true })
-  @Field(() => Boolean, {
-    description: 'Describes if the product item is still in storage',
+  @Prop({ required: true, default: ProductItemStatus.IN_STORAGE })
+  @Field(() => ProductItemStatus, {
+    description: 'Describes the inventory status of the product item',
   })
-  isInInventory: boolean;
+  inventoryStatus: ProductItemStatus;
 }
 
 export const ProductItemSchema = SchemaFactory.createForClass(ProductItem);

@@ -1,4 +1,5 @@
 import { InputType, Field } from '@nestjs/graphql';
+import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 import { UUID } from 'src/shared/scalars/CustomUuidScalar';
 
 @InputType({ description: 'The input of a product item update'})
@@ -13,8 +14,8 @@ export class UpdateProductItemInput {
   })
   productVariantId: string;
 
-  @Field(() => Boolean, {
+  @Field(() => ProductItemStatus, {
     description: 'The inventory state of the product item',
   })
-  isInInventory: boolean;
+  inventoryStatus: ProductItemStatus;
 }

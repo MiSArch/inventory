@@ -18,6 +18,9 @@ import { EventModule } from './events/event.module';
     // For GraphQL Federation v2
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,
+      buildSchemaOptions: {
+        numberScalarMode: 'integer'
+      },
       resolvers: { UUID: UUID },
       autoSchemaFile: {
         federation: 2,

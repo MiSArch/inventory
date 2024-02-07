@@ -21,6 +21,8 @@ import { ProductItemOrderField } from 'src/shared/enums/product-item-order-field
 import { queryKeys } from 'src/shared/utils/query.info.utils';
 import { FindProductItemsByProductVariantArgs } from './dto/find-product-item-by-product-version-id.args';
 import { Logger } from '@nestjs/common';
+import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
+import { ReserveProductItemsBatchInput } from './dto/reserve-product-items-batch.input';
 
 @Resolver(() => ProductItem)
 export class InventoryResolver {
@@ -89,15 +91,14 @@ export class InventoryResolver {
 
   @Query(() => ProductItemConnection, {
     name: 'productItemsByProductVariant',
-    description:
-      'Returns product items in inventory of a product variant',
+    description: 'Returns product items in inventory of a product variant',
   })
   async findByProductVariant(
     @Args() args: FindProductItemsByProductVariantArgs,
     @Info() info,
   ) {
     const { first, skip, productVariantId } = args;
-  
+
     this.logger.log(
       `Resolving productItemsByProductVariant for ${JSON.stringify(args)}`,
     );
@@ -120,7 +121,10 @@ export class InventoryResolver {
     }
 
     if (query.includes('totalCount') || query.includes('hasNextPage')) {
-      connection.totalCount = await this.inventoryService.countByProductVariant(productVariantId);
+      connection.totalCount = await this.inventoryService.countByProductVariant(
+        productVariantId,
+        ProductItemStatus.IN_STORAGE,
+      );
       connection.hasNextPage = skip + first < connection.totalCount;
     }
     return connection;
@@ -174,6 +178,25 @@ export class InventoryResolver {
     this.logger.log(`Resolving deleteProductItem for${id}`);
 
     return this.inventoryService.delete(id);
+  }
+
+  @Mutation(() => [ProductItem], {
+    name: 'reserveProductItemBatch',
+    description:
+      'Reserves a batch of product items of a chosen product variant',
+  })
+  reserveProductItemBatch(
+    @Args('input')
+    reserveProductitemsBatch: ReserveProductItemsBatchInput,
+  ) {
+    this.logger.log(
+      'Resolving reserveProductItemBatch for input: ',
+      reserveProductitemsBatch,
+    );
+
+    return this.inventoryService.reserveProductItemBatch(
+      reserveProductitemsBatch,
+    );
   }
 
   @ResolveReference()

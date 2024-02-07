@@ -6,6 +6,8 @@ import { ProductItem } from './entities/product-item.entity';
 import { Model } from 'mongoose';
 import { FindProductItemArgs } from './dto/find-product-item.input';
 import { FindProductItemsByProductVariantArgs } from './dto/find-product-item-by-product-version-id.args';
+import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
+import { ReserveProductItemsBatchInput } from './dto/reserve-product-items-batch.input';
 import { ProductVariantPartialService } from 'src/product-variant-partial/product-variant-partial.service';
 
 @Injectable()
@@ -141,11 +143,11 @@ export class InventoryService {
     return deletedProductItem;
   }
 
-  async countByProductVariant(productVariant: string): Promise<number> {
+  async countByProductVariant(productVariant: string, status: ProductItemStatus): Promise<number> {
     this.logger.debug(`{countByProductVariant} query: ${productVariant}`);
     const count = await this.productItemModel.countDocuments({
       productVariant,
-      isInInventory: true,
+      inventoryStatus: status,
     });
 
     this.logger.debug(`{countByProductVariantId} returning ${count}`);
@@ -164,7 +166,7 @@ export class InventoryService {
     const productItems = await this.productItemModel
       .find({
         productVariant: productVariantId,
-        isInInventory: true,
+        inventoryStatus: ProductItemStatus.IN_STORAGE,
       })
       .limit(first)
       .skip(skip)
@@ -186,4 +188,33 @@ export class InventoryService {
   logError(functionName: string, error: Error) {
     this.logger.error(`{${functionName}} ${error.message} ${error.stack}`);
   }
+  
+  // function to reserve a batch of product items for an order
+  async reserveProductItemBatch(reserveInput: ReserveProductItemsBatchInput): Promise<ProductItem[]> {
+    // find the product items of the required product variant
+    const productItems = await this.productItemModel
+      .find({
+        productVariant: reserveInput.productVariantId,
+        inventoryStatus: ProductItemStatus.IN_STORAGE,
+      })
+      .limit(reserveInput.number);
+    
+    if (productItems.length < reserveInput.number) {
+      throw new NotFoundException(
+        `Not enough product items available for product variant "${reserveInput.productVariantId}"`,
+      );
+    }
+
+    // set the inventory status of the selected product items to reserved
+    const ids = productItems.map((productItem) => productItem._id);
+    const updatedItems = await this.productItemModel.updateMany(
+      { _id: { $in: ids } },
+      { $set: { inventoryStatus: ProductItemStatus.RESERVED } },
+      { multi: true, upsert: true },
+    );
+
+    // return the reserved product items
+    return this.productItemModel.find({ _id: { $in: ids } });
+  }
+
 }
