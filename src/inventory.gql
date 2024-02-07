@@ -151,7 +151,7 @@ input CreateProductItemBatchInput {
   productVariantId: UUID!
 
   """The number of products to add"""
-  number: Float!
+  number: Int!
 }
 
 """The input of a product item update"""
@@ -172,5 +172,5 @@ input ReserveProductItemsBatchInput {
   productVariantId: UUID!
 
   """The number of product items to reserve"""
-  number: Float!
+  number: Int!
 }

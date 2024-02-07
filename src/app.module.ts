@@ -16,6 +16,9 @@ import { MongooseModule } from '@nestjs/mongoose';
     // For GraphQL Federation v2
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,
+      buildSchemaOptions: {
+        numberScalarMode: 'integer'
+      },
       resolvers: { UUID: UUID },
       autoSchemaFile: {
         federation: 2,
