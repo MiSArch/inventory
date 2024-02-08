@@ -5,6 +5,8 @@ import { ProductItemConnection } from './graphql-types/product-item-connection.d
 import { ProductItemOrderField } from 'src/shared/enums/product-item-order-fields.enum';
 import { Logger } from '@nestjs/common';
 import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
+import { Roles } from 'src/shared/decorators/roles.decorator';
+import { Role } from 'src/shared/enums/role.enum';
 
 @Resolver(() => ProductVariant)
 export class ProductVariantResolver {
@@ -13,6 +15,7 @@ export class ProductVariantResolver {
     private readonly logger: Logger,  
   ) {}
 
+  @Roles(Role.EMPLOYEE, Role.SITE_ADMIN)
   @ResolveField(() => ProductItemConnection, {description: 'A product item connection for referenced product items in stock', nullable: true})
   async productItems(@Parent() productVariant: ProductVariant): Promise<ProductItemConnection>{
     this.logger.log('Resolving Product Items for ProductVariant: ', productVariant)
