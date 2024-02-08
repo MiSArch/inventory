@@ -17,7 +17,6 @@ services:
       start_period: 3s
     build:
       context: ./
-      dockerfile: ./src/Dockerfile
     environment:
       DATABASE_URI: mongodb://inventory-db:27017
     depends_on:
