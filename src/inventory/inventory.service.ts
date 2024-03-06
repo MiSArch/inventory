@@ -209,7 +209,10 @@ export class InventoryService {
     const ids = productItems.map((productItem) => productItem._id);
     const updatedItems = await this.productItemModel.updateMany(
       { _id: { $in: ids } },
-      { $set: { inventoryStatus: ProductItemStatus.RESERVED } },
+      { $set: {
+        inventoryStatus: ProductItemStatus.RESERVED,
+        orderId: reserveInput.orderId,
+      } },
       { multi: true, upsert: true },
     );
 
@@ -217,4 +220,27 @@ export class InventoryService {
     return this.productItemModel.find({ _id: { $in: ids } });
   }
 
+  // releases product items reserved for an order due to failure
+  async releaseProductItemBatch(orderId: string): Promise<ProductItem[]> {
+    this.logger.log(`Releasing product items reserved for order: {${orderId}}`);
+    const productItems = await this.productItemModel.find({ orderId });
+
+    if (productItems.length === 0) {
+      this.logger.log(`No product items reserved for order: {${orderId}}`);
+    }
+
+    const ids = productItems.map((productItem) => productItem._id);
+    await this.productItemModel.updateMany(
+      { _id: { $in: ids } },
+      { $set: {
+        inventoryStatus: ProductItemStatus.IN_STORAGE,
+        orderId: null,
+      } },
+      { multi: true, upsert: true },
+    );
+
+    this.logger.log(`Released ${ids.length} product items reserved for order: {${orderId}}`);
+
+    return this.productItemModel.find({ _id: { $in: ids } });
+  }
 }

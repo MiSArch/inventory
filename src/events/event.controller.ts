@@ -51,7 +51,11 @@ export class EventController {
         .map(async ({ productVariantId, count }) => {
           try {
             const result = await this.inventoryService
-              .reserveProductItemBatch({ productVariantId, number: count });
+              .reserveProductItemBatch({
+                productVariantId,
+                number: count,
+                orderId: order.id
+              });
             return { productVariantId, success: result !== undefined};
           } catch (error) {
             // A failure in reservation means there were not enough product items
@@ -71,6 +75,8 @@ export class EventController {
       if (unsuccessfulProductVariantIds.length > 0) {
         // Not all were successful
         this.createInventoryErrorEvent(order, unsuccessfulProductVariantIds);
+        // release the reserved product items
+        this.inventoryService.releaseProductItemBatch(order.id);
       } else {
         // All were successful
         this.createInventorySuccessEvent(order);
