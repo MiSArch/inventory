@@ -12,4 +12,9 @@ export class ReserveProductItemsBatchInput {
     description: 'The number of product items to reserve',
   })
   number: number;
+
+  @Field(() => UUID, {
+    description: 'The order id that reserves the product items',
+  })
+  orderId: string;
 }
