@@ -10,6 +10,7 @@ import { UUID } from './shared/scalars/CustomUuidScalar';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ProductVariantPartialModule } from './product-variant-partial/product-variant-partial.module';
 import { EventModule } from './events/event.module';
+import { RolesGuard } from './shared/guards/roles.guard';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { EventModule } from './events/event.module';
       buildSchemaOptions: {
         numberScalarMode: 'integer'
       },
+      context: ({ req }) => ({ request: req }),
       resolvers: { UUID: UUID },
       autoSchemaFile: {
         federation: 2,
@@ -33,6 +35,10 @@ import { EventModule } from './events/event.module';
     ProductVariantPartialModule,
     InventoryModule,
     EventModule,
-  ]
+  ],
+  providers: [{
+    provide: 'APP_GUARD',
+    useClass: RolesGuard
+  }]
 })
 export class AppModule {}

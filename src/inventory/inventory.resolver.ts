@@ -23,6 +23,8 @@ import { FindProductItemsByProductVariantArgs } from './dto/find-product-item-by
 import { Logger } from '@nestjs/common';
 import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 import { ReserveProductItemsBatchInput } from './dto/reserve-product-items-batch.input';
+import { Roles } from 'src/shared/decorators/roles.decorator';
+import { Role } from 'src/shared/enums/role.enum';
 
 @Resolver(() => ProductItem)
 export class InventoryResolver {
@@ -32,6 +34,7 @@ export class InventoryResolver {
     private readonly logger: Logger,
   ) {}
 
+  @Roles(Role.EMPLOYEE, Role.SITE_ADMIN)
   @Mutation(() => [ProductItem], {
     name: 'createProductItemBatch',
     description:
@@ -52,6 +55,7 @@ export class InventoryResolver {
     );
   }
 
+  @Roles(Role.EMPLOYEE, Role.SITE_ADMIN)
   @Query(() => ProductItemConnection, {
     name: 'productItems',
     description: 'Retrieves all product items',
@@ -89,6 +93,7 @@ export class InventoryResolver {
     return connection;
   }
 
+  @Roles(Role.EMPLOYEE, Role.SITE_ADMIN)
   @Query(() => ProductItemConnection, {
     name: 'productItemsByProductVariant',
     description: 'Returns product items in inventory of a product variant',
@@ -130,6 +135,7 @@ export class InventoryResolver {
     return connection;
   }
 
+  @Roles(Role.EMPLOYEE, Role.SITE_ADMIN)
   @Query(() => ProductItem, {
     name: 'productItem',
     description: 'Retrieves a product item by id',
@@ -143,6 +149,7 @@ export class InventoryResolver {
     return this.inventoryService.findOne(id);
   }
 
+  @Roles(Role.EMPLOYEE, Role.SITE_ADMIN)
   @Mutation(() => ProductItem, {
     name: 'updateProductItem',
     description:
@@ -164,6 +171,7 @@ export class InventoryResolver {
     );
   }
 
+  @Roles(Role.SITE_ADMIN)
   @Mutation(() => ProductItem, {
     name: 'deleteProductItem',
     description: 'Deletes a product item by id',
@@ -180,6 +188,7 @@ export class InventoryResolver {
     return this.inventoryService.delete(id);
   }
 
+  @Roles(Role.EMPLOYEE, Role.SITE_ADMIN)
   @Mutation(() => [ProductItem], {
     name: 'reserveProductItemBatch',
     description:
@@ -199,6 +208,7 @@ export class InventoryResolver {
     );
   }
 
+  @Roles(Role.EMPLOYEE, Role.SITE_ADMIN)
   @ResolveReference()
   resolveReference(reference: {
     __typename: string;
