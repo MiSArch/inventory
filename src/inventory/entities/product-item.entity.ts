@@ -36,6 +36,7 @@ export class ProductItem {
 
   @Prop()
   @Field(() => UUID, {
+    nullable: true,
     description: 'Reference to the order that reserved the product item',
   })
   orderId?: string;

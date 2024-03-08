@@ -16,6 +16,11 @@ export class EventController {
   ) {}
 
   @Get('/dapr/subscribe')
+  /**
+   * Subscribes to the product variant and order events.
+   * 
+   * @returns A promise that resolves to an array of objects containing the pubsubName, topic, and route.
+   */
   async subscribe(): Promise<any> {
     return [
       {
@@ -31,6 +36,12 @@ export class EventController {
   }
 
   @Post('product-variant-created')
+  /**
+   * Endpoint for product variant creation events.
+   * 
+   * @param body - The event data received from Dapr.
+   * @returns A promise that resolves to void.
+   */
   async subscribeToProductVariantEvent(@Body() body: any): Promise<void> {
     // Handle incoming event data from Dapr
     const id = body.data.id;
@@ -39,32 +50,22 @@ export class EventController {
     this.productVariantService.create(id);
   }
 
+
   @Post('order-created')
+  /**
+   * Endpoint for order creation events.
+   * 
+   * @param orderDto - The order data received from Dapr.
+   * @returns A promise that resolves to void.
+   */
   async subscribeToOrderEvent(@Body('data') orderDto: CreateOrderDto): Promise<void> {
     // Handle incoming event data from Dapr
     const { order } = orderDto
     this.logger.log(`Received event for order with id: ${order.id} with orderItems ${order.orderItems}`);
     
     try {
-      // Map each order item to a promise that resolves to an object containing the productVariantId and the result
-      const reservationPromises = order.orderItems
-        .map(async ({ productVariantId, count }) => {
-          try {
-            const result = await this.inventoryService
-              .reserveProductItemBatch({
-                productVariantId,
-                number: count,
-                orderId: order.id
-              });
-            return { productVariantId, success: result !== undefined};
-          } catch (error) {
-            // A failure in reservation means there were not enough product items
-            return { productVariantId, success: false };
-          }
-        });
-
-      // Wait for all service calls to resolve
-      const results = await Promise.all(reservationPromises);
+      // Attempt to reserve all product items for the order
+      const results = await this.batchPromiseOrderItems(order);
 
       // Filter out unsuccessful reservations and extract their productVariantIds
       const unsuccessfulProductVariantIds = results
@@ -86,12 +87,43 @@ export class EventController {
     }
   }
 
-  createInventorySuccessEvent(orderId: OrderDTO): void {
-    // Create an event to indicate that product items have been reserved
+  
+  /**
+   * Reserves product items in batch for an order.
+   * @param order - The order containing the order items to be reserved.
+   * @returns A promise that resolves to an array of objects containing the productVariantId and the reservation result.
+   */
+  private async batchPromiseOrderItems(order: OrderDTO) {
+    // Map each order item to a promise that resolves to an object containing the productVariantId and the result
+    const reservationPromises = order.orderItems
+      .map(async ({ productVariantId, count }) => {
+        try {
+          const result = await this.inventoryService
+            .reserveProductItemBatch({
+              productVariantId,
+              number: count,
+              orderId: order.id
+            });
+          return { productVariantId, success: result !== undefined };
+        } catch (error) {
+          // A failure in reservation means there were not enough product items
+          return { productVariantId, success: false };
+        }
+      });
+
+    // Wait for all service calls to resolve
+    const results = await Promise.all(reservationPromises);
+    return results;
+  }
+
+  /**
+   * Creates an inventory success event.
+   * This event indicates that product items have been reserved.
+   * @param order - The order context.
+   */
+  createInventorySuccessEvent(order: OrderDTO): void {
     const eventPayload = {
-      order: {
-        id: orderId
-      }
+        order
     };
     // send event
     this.eventPublisherService.publishEvent(
@@ -101,8 +133,13 @@ export class EventController {
     );
   }
 
-  createInventoryErrorEvent(order: any, productVariantIds: string[]): void {
-    // Create an event to indicate that product items could not be reserved
+  /**
+   * Creates an inventory error event.
+   * This event indicates that product items could not be reserved.
+   * @param order - The order context.
+   * @param productVariantIds - The IDs of the product variants for which reservation failed.
+   */
+  createInventoryErrorEvent(order: OrderDTO, productVariantIds: string[]): void {
     const eventPayload = {
       order,
       failedProductVariantIds: productVariantIds
