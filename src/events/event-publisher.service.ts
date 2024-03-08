@@ -18,6 +18,15 @@ export class EventPublisherService {
     });
   }
 
+  
+  /**
+   * Publishes an event to a specified topic using the Dapr pubsub component.
+   * 
+   * @param pubsubName - The name of the Dapr pubsub component.
+   * @param topic - The topic to which the event will be published.
+   * @param data - The data of the event.
+   * @returns A promise that resolves when the event is published successfully, or rejects with an error if there was an issue.
+   */
   async publishEvent(pubsubName: string, topic: string, data: any): Promise<void> {
     try {
       await this.daprClient.pubsub.publish(pubsubName, topic, data);
