@@ -29,7 +29,7 @@ type ProductItem
   inventoryStatus: ProductItemStatus!
 
   """Reference to the order that reserved the product item"""
-  orderId: UUID!
+  orderId: UUID
 }
 
 """The status of an individual product item in the inventory"""

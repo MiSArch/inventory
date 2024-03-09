@@ -15,12 +15,12 @@ export class EventController {
     private readonly eventPublisherService: EventPublisherService,
   ) {}
 
-  @Get('/dapr/subscribe')
   /**
    * Subscribes to the product variant and order events.
    * 
    * @returns A promise that resolves to an array of objects containing the pubsubName, topic, and route.
-   */
+  */
+  @Get('/dapr/subscribe')
   async subscribe(): Promise<any> {
     return [
       {
@@ -35,13 +35,13 @@ export class EventController {
   ];
   }
 
-  @Post('product-variant-created')
   /**
    * Endpoint for product variant creation events.
    * 
    * @param body - The event data received from Dapr.
    * @returns A promise that resolves to void.
-   */
+  */
+  @Post('product-variant-created')
   async subscribeToProductVariantEvent(@Body() body: any): Promise<void> {
     // Handle incoming event data from Dapr
     const id = body.data.id;
@@ -51,13 +51,13 @@ export class EventController {
   }
 
 
-  @Post('order-created')
   /**
    * Endpoint for order creation events.
    * 
    * @param orderDto - The order data received from Dapr.
    * @returns A promise that resolves to void.
-   */
+  */
+  @Post('order-created')
   async subscribeToOrderEvent(@Body('data') orderDto: CreateOrderDto): Promise<void> {
     // Handle incoming event data from Dapr
     const { order } = orderDto
@@ -93,7 +93,9 @@ export class EventController {
    * @param order - The order containing the order items to be reserved.
    * @returns A promise that resolves to an array of objects containing the productVariantId and the reservation result.
    */
-  private async batchPromiseOrderItems(order: OrderDTO) {
+  private async batchPromiseOrderItems(
+    order: OrderDTO
+  ): Promise<{productVariantId: string, success: boolean}[]>{
     // Map each order item to a promise that resolves to an object containing the productVariantId and the result
     const reservationPromises = order.orderItems
       .map(async ({ productVariantId, count }) => {
