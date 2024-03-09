@@ -1,8 +1,11 @@
 import { Body, Controller, Get, Logger, Post } from '@nestjs/common';
 import { ProductVariantPartialService } from 'src/product-variant-partial/product-variant-partial.service';
-import { CreateOrderDto, OrderDTO } from './dto/create-order.dto';
+import { CreateOrderDto } from './dto/order/create-order.dto';
 import { InventoryService } from 'src/inventory/inventory.service';
 import { EventPublisherService } from './event-publisher.service';
+import { ReservationSucceededDTO } from './dto/inventory/reservation-succeeded.dto';
+import { ReservationFailedDTO } from './dto/inventory/reservation-failed.dto';
+import { OrderDTO } from './dto/order/order.dto';
 
 
 @Controller()
@@ -58,9 +61,8 @@ export class EventController {
    * @returns A promise that resolves to void.
   */
   @Post('order-created')
-  async subscribeToOrderEvent(@Body('data') orderDto: CreateOrderDto): Promise<void> {
+  async subscribeToOrderEvent(@Body('data') order: OrderDTO): Promise<void> {
     // Handle incoming event data from Dapr
-    const { order } = orderDto
     this.logger.log(`Received event for order with id: ${order.id} with orderItems ${order.orderItems}`);
     
     try {
@@ -124,7 +126,7 @@ export class EventController {
    * @param order - The order context.
    */
   createInventorySuccessEvent(order: OrderDTO): void {
-    const eventPayload = {
+    const eventPayload: ReservationSucceededDTO = {
         order
     };
     // send event
@@ -142,7 +144,7 @@ export class EventController {
    * @param productVariantIds - The IDs of the product variants for which reservation failed.
    */
   createInventoryErrorEvent(order: OrderDTO, productVariantIds: string[]): void {
-    const eventPayload = {
+    const eventPayload: ReservationFailedDTO = {
       order,
       failedProductVariantIds: productVariantIds
     };
