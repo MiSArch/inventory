@@ -1,6 +1,5 @@
 import { Body, Controller, Get, Logger, Post } from '@nestjs/common';
 import { ProductVariantPartialService } from 'src/product-variant-partial/product-variant-partial.service';
-import { CreateOrderDto } from './dto/order/create-order.dto';
 import { InventoryService } from 'src/inventory/inventory.service';
 import { EventPublisherService } from './event-publisher.service';
 import { ReservationSucceededDTO } from './dto/inventory/reservation-succeeded.dto';
