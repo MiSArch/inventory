@@ -14,5 +14,6 @@ import { ProductVariantPartialModule } from 'src/product-variant-partial/product
     ProductVariantPartialModule
   ],
   providers: [InventoryResolver, InventoryService, ProductVariantResolver, Logger],
+  exports: [InventoryService],
 })
 export class InventoryModule {}

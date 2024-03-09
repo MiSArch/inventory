@@ -33,6 +33,13 @@ export class ProductItem {
     description: 'Describes the inventory status of the product item',
   })
   inventoryStatus: ProductItemStatus;
+
+  @Prop()
+  @Field(() => UUID, {
+    nullable: true,
+    description: 'Reference to the order that reserved the product item',
+  })
+  orderId?: string;
 }
 
 export const ProductItemSchema = SchemaFactory.createForClass(ProductItem);
