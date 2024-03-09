@@ -101,6 +101,9 @@ type Query {
     """UUID of the user"""
     id: UUID!
   ): ProductItem!
+
+  """Returns true if the service is healthy"""
+  healthcheck: Boolean!
 }
 
 """Ordering options for product items"""

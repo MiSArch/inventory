@@ -149,6 +149,14 @@ export class InventoryResolver {
     return this.inventoryService.findOne(id);
   }
 
+  @Query(() => Boolean, {
+    name: 'healthcheck',
+    description: 'Returns true if the service is healthy',
+  })
+  healthCheck() {
+    return true;
+  }
+
   @Roles(Role.EMPLOYEE, Role.SITE_ADMIN)
   @Mutation(() => ProductItem, {
     name: 'updateProductItem',
