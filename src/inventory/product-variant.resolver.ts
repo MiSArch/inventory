@@ -7,6 +7,7 @@ import { Roles } from 'src/shared/decorators/roles.decorator';
 import { Role } from 'src/shared/enums/role.enum';
 import { FindProductItemArgs } from './dto/find-product-item.input';
 import { queryKeys } from 'src/shared/utils/query.info.utils';
+import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 
 @Resolver(() => ProductVariant)
 export class ProductVariantResolver {
@@ -26,7 +27,9 @@ export class ProductVariantResolver {
     @Info() info,
   ): Promise<ProductItemConnection> {
     this.logger.log(
-      `Resolving Product Items for ProductVariant: ${JSON.stringify(productVariant)}`
+      `Resolving Product Items for ProductVariant: ${JSON.stringify(
+        productVariant,
+      )}`,
     );
 
     // get query keys to avoid unnecessary workload
@@ -37,5 +40,24 @@ export class ProductVariantResolver {
     args.filter = { productVariant: productVariant.id };
 
     return this.inventoryService.buildConnection(query, args);
+  }
+
+  @Roles(Role.BUYER, Role.EMPLOYEE, Role.SITE_ADMIN)
+  @ResolveField(() => Number, {
+    description: 'The number of product items in stock',
+  })
+  async inventoryCount(
+    @Parent() productVariant: ProductVariant,
+  ): Promise<Number> {
+    this.logger.log(
+      `Resolving Inventory Count for ProductVariant: ${JSON.stringify(
+        productVariant,
+      )}`,
+    );
+
+    return this.inventoryService.count({
+      productVariant,
+      status: ProductItemStatus.IN_STORAGE,
+    });
   }
 }
