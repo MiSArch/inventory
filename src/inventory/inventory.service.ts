@@ -37,6 +37,7 @@ export class InventoryService {
       )}`,
     );
 
+    // validate product variants existence
     if (
       !(await this.productVariantPartialService.findById(
         createProductItemBatchInput.productVariantId,
@@ -143,6 +144,7 @@ export class InventoryService {
       `{update} for ${_id} input: ${JSON.stringify(updateProductItemInput)}`,
     );
 
+    // validate product variants existence
     if (!(await this.productVariantPartialService.findById(productVariantId))) {
       throw new NotFoundException(
         `ProductVariant with ID "${productVariantId}" not found`,
@@ -256,19 +258,31 @@ export class InventoryService {
   async reserveProductItemBatch(
     reserveInput: ReserveProductItemsBatchInput,
   ): Promise<ProductItem[]> {
+    const { productVariantId, number, orderId } = reserveInput;
+
+    // validate product variants existence
+    if (!(await this.productVariantPartialService.findById(productVariantId))) {
+      throw new NotFoundException(
+        `ProductVariant with ID "${productVariantId}" not found`,
+      );
+    }
     // find the product items of the required product variant
     const productItems = await this.productItemModel
       .find({
-        productVariant: reserveInput.productVariantId,
+        productVariant: productVariantId,
         inventoryStatus: ProductItemStatus.IN_STORAGE,
       })
-      .limit(reserveInput.number);
+      .limit(number);
 
-    if (productItems.length < reserveInput.number) {
+    if (productItems.length < number) {
       throw new NotFoundException(
-        `Not enough product items available for product variant "${reserveInput.productVariantId}"`,
+        `Not enough product items available for product variant "${productVariantId}"`,
       );
     }
+
+    this.logger.debug(
+      `Reserving ${number} product items of product variant: ${productVariantId}`,
+    );
 
     // set the inventory status of the selected product items to reserved
     const ids = productItems.map((productItem) => productItem._id);
@@ -277,7 +291,7 @@ export class InventoryService {
       {
         $set: {
           inventoryStatus: ProductItemStatus.RESERVED,
-          orderId: reserveInput.orderId,
+          orderId: orderId,
         },
       },
       { multi: true, upsert: true },
