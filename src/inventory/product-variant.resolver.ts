@@ -26,16 +26,16 @@ export class ProductVariantResolver {
     @Info() info,
   ): Promise<ProductItemConnection> {
     this.logger.log(
-      'Resolving Product Items for ProductVariant: ',
-      productVariant,
+      `Resolving Product Items for ProductVariant: ${JSON.stringify(productVariant)}`
     );
 
     // get query keys to avoid unnecessary workload
     const query = queryKeys(info);
     // build default FindProductItemArgs
-    const args = new FindProductItemArgs();
-    const filter = { productVariant: productVariant.id };
+    let args = new FindProductItemArgs();
+    // filter for correct product variant
+    args.filter = { productVariant: productVariant.id };
 
-    return this.inventoryService.buildConnection(query, args, filter);
+    return this.inventoryService.buildConnection(query, args);
   }
 }

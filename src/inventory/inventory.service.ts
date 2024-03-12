@@ -212,7 +212,6 @@ export class InventoryService {
   async buildConnection(
     query: string[],
     args: FindProductItemArgs,
-    filter?: any,
   ): Promise<ProductItemConnection> {
     const { first, skip } = args;
     let connection = new ProductItemConnection();
@@ -227,11 +226,11 @@ export class InventoryService {
       }
 
       // get nodes according to args
-      connection.nodes = await this.find(args, filter);
+      connection.nodes = await this.find(args, args.filter);
     }
 
     if (query.includes('totalCount') || query.includes('hasNextPage')) {
-      connection.totalCount = await this.count(filter);
+      connection.totalCount = await this.count(args.filter);
       connection.hasNextPage = skip + first < connection.totalCount;
     }
     return connection;

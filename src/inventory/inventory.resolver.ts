@@ -18,7 +18,6 @@ import { FindProductItemArgs } from './dto/find-product-item.input';
 import { IPaginatedType } from 'src/shared/interfaces/pagination.interface';
 import { ProductItemConnection } from 'src/inventory/graphql-types/product-item-connection.dto';
 import { queryKeys } from 'src/shared/utils/query.info.utils';
-import { FindProductItemsByProductVariantArgs } from './dto/find-product-item-by-product-version-id.args';
 import { Logger } from '@nestjs/common';
 import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 import { ReserveProductItemsBatchInput } from './dto/reserve-product-items-batch.input';
@@ -57,46 +56,18 @@ export class InventoryResolver {
   @Roles(Role.EMPLOYEE, Role.SITE_ADMIN)
   @Query(() => ProductItemConnection, {
     name: 'productItems',
-    description: 'Retrieves all product items',
+    description: 'Retrieves all product items matching the filter',
   })
-  async findAll(
+  async find(
     @Args() args: FindProductItemArgs,
     @Info() info,
   ): Promise<IPaginatedType<ProductItem>> {
     this.logger.log(`Resolving productItems for ${JSON.stringify(args)}`);
-    const { first, skip } = args;
 
     // get query keys to avoid unnecessary workload
     const query = queryKeys(info);
 
-    return this.inventoryService.buildConnection(query, args, {});
-  }
-
-  @Roles(Role.EMPLOYEE, Role.SITE_ADMIN)
-  @Query(() => ProductItemConnection, {
-    name: 'productItemsByProductVariant',
-    description: 'Returns product items in inventory of a product variant',
-  })
-  async findByProductVariant(
-    @Args() args: FindProductItemsByProductVariantArgs,
-    @Info() info,
-  ) {
-    const { first, skip, productVariantId } = args;
-
-    this.logger.log(
-      `Resolving productItemsByProductVariant for ${JSON.stringify(args)}`,
-    );
-
-    // get query keys to avoid unnecessary workload
-    const query = queryKeys(info);
-
-    // build filter for connection
-    const filter = {
-      productVariant: productVariantId,
-      status: ProductItemStatus.IN_STORAGE,
-    };
-
-    return this.inventoryService.buildConnection(query, args, filter);
+    return this.inventoryService.buildConnection(query, args);
   }
 
   @Roles(Role.EMPLOYEE, Role.SITE_ADMIN)

@@ -2,6 +2,7 @@ import { Field, Int, ArgsType } from '@nestjs/graphql';
 import { Max, Min } from 'class-validator';
 import { ProductItemOrder } from './order-directions.input';
 import { MAX_INT32 } from 'src/shared/constants/constants';
+import { ProductItemFilter } from './filter-product-item.input';
 
 @ArgsType()
 export class FindProductItemArgs {
@@ -21,4 +22,10 @@ export class FindProductItemArgs {
 
   @Field(() => ProductItemOrder, { description: 'Ordering', nullable: true })
   orderBy?: ProductItemOrder;
+
+  @Field(() => ProductItemFilter, {
+    description: 'Filtering',
+    nullable: true,
+  })
+  filter?: ProductItemFilter;
 }
