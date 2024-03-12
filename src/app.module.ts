@@ -36,6 +36,7 @@ import { RolesGuard } from './shared/guards/roles.guard';
     InventoryModule,
     EventModule,
   ],
+  // Provide the RolesGuard as a global guard
   providers: [{
     provide: 'APP_GUARD',
     useClass: RolesGuard

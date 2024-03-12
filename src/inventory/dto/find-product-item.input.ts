@@ -10,15 +10,15 @@ export class FindProductItemArgs {
     nullable: true,
   })
   @Min(0)
-  skip: number = 0;
+  skip?: number = 0;
 
   @Field(() => Int, {
     description: 'Number of items to return',
     nullable: true,
   })
   @Min(1)
-  first: number = MAX_INT32;
+  first?: number = MAX_INT32;
 
   @Field(() => ProductItemOrder, { description: 'Ordering', nullable: true })
-  orderBy: ProductItemOrder;
+  orderBy?: ProductItemOrder;
 }

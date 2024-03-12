@@ -8,6 +8,11 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
+  /**
+   * Determines whether the user can access the specified route.
+   * @param context - The execution context.
+   * @returns A boolean indicating whether the user can access the route.
+   */
   canActivate(context: ExecutionContext): boolean {
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
       context.getHandler(),

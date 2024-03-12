@@ -44,6 +44,7 @@ export class ProductItem {
 
 export const ProductItemSchema = SchemaFactory.createForClass(ProductItem);
 
+// virtual id field to get around mongoose _id restrictions
 ProductItemSchema.virtual('id').get(function () {
   return this._id;
 });

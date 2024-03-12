@@ -18,7 +18,7 @@ export enum ProductItemStatus {
     LOST = 'LOST',
 }
 
-// Register the enum with NestJS GraphQL
+// Register the enum with GraphQL
 registerEnumType(ProductItemStatus, {
     name: 'ProductItemStatus',
     description: 'The status of an individual product item in the inventory',
