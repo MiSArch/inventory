@@ -10,6 +10,9 @@ type ProductVariant
 
   """A product item connection for referenced product items in stock"""
   productItems: ProductItemConnection
+
+  """The number of product items in stock"""
+  inventoryCount: Int!
 }
 
 """A universally unique identifier compliant UUID Scalar"""
@@ -69,7 +72,7 @@ type ProductItemConnection {
 }
 
 type Query {
-  """Retrieves all product items"""
+  """Retrieves all product items matching the filter"""
   productItems(
     """Number of items to skip"""
     skip: Int = 0
@@ -79,21 +82,9 @@ type Query {
 
     """Ordering"""
     orderBy: ProductItemOrder
-  ): ProductItemConnection!
 
-  """Returns product items in inventory of a product variant"""
-  productItemsByProductVariant(
-    """UUID of product variant for stock count"""
-    productVariantId: UUID!
-
-    """Number of items to skip"""
-    skip: Int = 0
-
-    """Number of items to return"""
-    first: Int = 2147483647
-
-    """Ordering"""
-    orderBy: ProductItemOrder
+    """Filtering"""
+    filter: ProductItemFilter
   ): ProductItemConnection!
 
   """Retrieves a product item by id"""
@@ -125,6 +116,15 @@ enum OrderDirection {
 
   """Decending Order"""
   DESC
+}
+
+"""Ordering options for product items"""
+input ProductItemFilter {
+  """Linked product variant id"""
+  productVariant: UUID
+
+  """Current product item status"""
+  status: ProductItemStatus
 }
 
 type Mutation {
