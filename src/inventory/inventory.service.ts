@@ -202,6 +202,13 @@ export class InventoryService {
     return count;
   }
 
+  /**
+   * Builds a connection to product items based on the provided arguments and filter.
+   * @param query - An array of strings indicating the requested fields in the query.
+   * @param args - The pagination and ordering arguments.
+   * @param filter - An optional filter to apply when finding product items.
+   * @returns A promise that resolves to a ProductItemConnection.
+   */
   async buildConnection(
     query: string[],
     args: FindProductItemArgs,
@@ -229,16 +236,6 @@ export class InventoryService {
       connection.hasNextPage = skip + first < connection.totalCount;
     }
     return connection;
-  }
-
-  /**
-   * Retrieves the count of product items in the collection.
-   * @returns A promise that resolves to the count of product items.
-   */
-  async getCount(): Promise<number> {
-    this.logger.debug('{getCount} retrieving collection count');
-    const count = await this.productItemModel.countDocuments();
-    return count;
   }
 
   /**
