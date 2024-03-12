@@ -15,5 +15,5 @@ export class ProductItemFilter {
     description: 'Current product item status',
     nullable: true,
   })
-  status?: ProductItemStatus;
+  inventoryStatus?: ProductItemStatus;
 }

@@ -124,7 +124,7 @@ input ProductItemFilter {
   productVariant: UUID
 
   """Current product item status"""
-  status: ProductItemStatus
+  inventoryStatus: ProductItemStatus
 }
 
 type Mutation {
