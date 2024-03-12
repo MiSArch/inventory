@@ -56,8 +56,8 @@ export class ProductVariantResolver {
     );
 
     return this.inventoryService.count({
-      productVariant,
-      status: ProductItemStatus.IN_STORAGE,
+      productVariant: productVariant.id,
+      inventoryStatus: ProductItemStatus.IN_STORAGE,
     });
   }
 }
