@@ -215,13 +215,12 @@ export class InventoryService {
     filter?: any,
   ): Promise<ProductItemConnection> {
     const { first, skip } = args;
-    let { orderBy } = args;
     let connection = new ProductItemConnection();
 
     if (query.includes('nodes')) {
       // default order is ascending by id
-      if (!orderBy) {
-        orderBy = {
+      if (!args.orderBy) {
+        args.orderBy = {
           field: ProductItemOrderField.ID,
           direction: 1,
         };

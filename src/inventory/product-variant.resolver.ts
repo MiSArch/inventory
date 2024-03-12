@@ -34,7 +34,7 @@ export class ProductVariantResolver {
     const query = queryKeys(info);
     // build default FindProductItemArgs
     const args = new FindProductItemArgs();
-    const filter = { productVariantId: productVariant.id };
+    const filter = { productVariant: productVariant.id };
 
     return this.inventoryService.buildConnection(query, args, filter);
   }
