@@ -11,6 +11,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ProductVariantPartialModule } from './product-variant-partial/product-variant-partial.module';
 import { EventModule } from './events/event.module';
 import { RolesGuard } from './shared/guards/roles.guard';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { RolesGuard } from './shared/guards/roles.guard';
     ProductVariantPartialModule,
     InventoryModule,
     EventModule,
+    HealthModule,
   ],
   providers: [{
     provide: 'APP_GUARD',

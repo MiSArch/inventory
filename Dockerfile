@@ -1,5 +1,31 @@
+################
+## Development ##
+################
+# base image
+FROM node:18 AS development
+
+# Working directory inside container
+WORKDIR /src/inventory
+
+# Copy the package.jsons from host to container
+# A wildcard is used to ensure both package.json AND package-lock.json are copied
+COPY package*.json ./
+
+# Install app dependencies
+RUN npm install
+
+# Bundle app source
+COPY . .
+
+# Build the app to the /dist folder
+RUN npm run build
+
+################
+## PRODUCTION ##
+################
+
 # Base image
-FROM node:18
+FROM node:18 AS production
 
 # Create app directory
 WORKDIR /usr/src/app
