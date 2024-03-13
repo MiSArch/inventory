@@ -35,7 +35,7 @@ export class ProductVariantResolver {
     // get query keys to avoid unnecessary workload
     const query = queryKeys(info);
     // build default FindProductItemArgs
-    let args = new FindProductItemArgs();
+    const args = new FindProductItemArgs();
     // filter for correct product variant
     args.filter = { productVariant: productVariant.id };
 

@@ -103,7 +103,7 @@ export class InventoryService {
       .skip(skip)
       .sort({ [orderBy.field]: orderBy.direction });
 
-    this.logger.debug(`{findAll} returning ${productItems.length} results`);
+    this.logger.debug(`{find} returning ${productItems.length} results`);
 
     return productItems;
   }
@@ -191,8 +191,7 @@ export class InventoryService {
 
   /**
    * Counts the number of product items for a given product variant and status.
-   * @param productVariant The product variant to count product items for.
-   * @param status The status to filter the product items by.
+   * @param filter The filter to apply to the count operation.
    * @returns A promise that resolves to the count of product items.
    */
   async count(filter: any): Promise<number> {
@@ -208,7 +207,6 @@ export class InventoryService {
    * Builds a connection to product items based on the provided arguments and filter.
    * @param query - An array of strings indicating the requested fields in the query.
    * @param args - The pagination and ordering arguments.
-   * @param filter - An optional filter to apply when finding product items.
    * @returns A promise that resolves to a ProductItemConnection.
    */
   async buildConnection(
@@ -218,6 +216,8 @@ export class InventoryService {
     const { first, skip } = args;
     let connection = new ProductItemConnection();
 
+    // Every query that returns any element needs the 'nodes' part
+    // as per the GraphQL Federation standard
     if (query.includes('nodes')) {
       // default order is ascending by id
       if (!args.orderBy) {
