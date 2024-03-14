@@ -18,6 +18,9 @@ type ProductVariant
 
     """Ordering"""
     orderBy: ProductItemOrder
+
+    """Filtering"""
+    filter: ProductItemOfProductVariantFilter
   ): ProductItemConnection
 
   """The number of product items in stock"""
@@ -51,21 +54,10 @@ enum OrderDirection {
   DESC
 }
 
-"""A product Item of a product variant"""
-type ProductItem
-  @key(fields: "id")
-{
-  """The uuid identifier of the product item"""
-  id: UUID!
-
-  """The corresponding product variant"""
-  productVariant: ProductVariant!
-
-  """Describes the inventory status of the product item"""
-  inventoryStatus: ProductItemStatus!
-
-  """Reference to the order that reserved the product item"""
-  orderId: UUID
+"""Filtering options for product items of product variants"""
+input ProductItemOfProductVariantFilter {
+  """Current product item status"""
+  inventoryStatus: ProductItemStatus
 }
 
 """The status of an individual product item in the inventory"""
@@ -90,6 +82,23 @@ enum ProductItemStatus {
 
   """The item has been lost (e.g., during shipping or in the warehouse)"""
   LOST
+}
+
+"""A product Item of a product variant"""
+type ProductItem
+  @key(fields: "id")
+{
+  """The uuid identifier of the product item"""
+  id: UUID!
+
+  """The corresponding product variant"""
+  productVariant: ProductVariant!
+
+  """Describes the inventory status of the product item"""
+  inventoryStatus: ProductItemStatus!
+
+  """Reference to the order that reserved the product item"""
+  orderId: UUID
 }
 
 """A connection of product items"""
