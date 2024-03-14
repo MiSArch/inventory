@@ -14,7 +14,7 @@ import { ProductItem } from './entities/product-item.entity';
 import { CreateProductItemBatchInput } from './dto/create-product-item-batch.input';
 import { UpdateProductItemInput } from './dto/update-product-item.input';
 import { UUID } from 'src/shared/scalars/CustomUuidScalar';
-import { FindProductItemArgs } from './dto/find-product-item.input';
+import { FindProductItemsArgs } from './dto/find-product-items.input';
 import { IPaginatedType } from 'src/shared/interfaces/pagination.interface';
 import { ProductItemConnection } from 'src/inventory/graphql-types/product-item-connection.dto';
 import { queryKeys } from 'src/shared/utils/query.info.utils';
@@ -59,7 +59,7 @@ export class InventoryResolver {
     description: 'Retrieves all product items matching the filter',
   })
   async find(
-    @Args() args: FindProductItemArgs,
+    @Args() args: FindProductItemsArgs,
     @Info() info,
   ): Promise<IPaginatedType<ProductItem>> {
     this.logger.log(`Resolving productItems for ${JSON.stringify(args)}`);

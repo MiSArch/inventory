@@ -1,13 +1,13 @@
-import { Resolver, ResolveField, Parent, Info } from '@nestjs/graphql';
+import { Resolver, ResolveField, Parent, Info, Args } from '@nestjs/graphql';
 import { ProductVariant } from './graphql-types/product-variant.entity';
 import { InventoryService } from './inventory.service';
 import { ProductItemConnection } from './graphql-types/product-item-connection.dto';
 import { Logger } from '@nestjs/common';
 import { Roles } from 'src/shared/decorators/roles.decorator';
 import { Role } from 'src/shared/enums/role.enum';
-import { FindProductItemArgs } from './dto/find-product-item.input';
 import { queryKeys } from 'src/shared/utils/query.info.utils';
 import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
+import { FindProductItemsByProductVariantArgs } from './dto/find-product-items-by-product-variant.input';
 
 @Resolver(() => ProductVariant)
 export class ProductVariantResolver {
@@ -24,6 +24,7 @@ export class ProductVariantResolver {
   })
   async productItems(
     @Parent() productVariant: ProductVariant,
+    @Args() args: FindProductItemsByProductVariantArgs,
     @Info() info,
   ): Promise<ProductItemConnection> {
     this.logger.log(
@@ -34,12 +35,11 @@ export class ProductVariantResolver {
 
     // get query keys to avoid unnecessary workload
     const query = queryKeys(info);
-    // build default FindProductItemArgs
-    let args = new FindProductItemArgs();
-    // filter for correct product variant
-    args.filter = { productVariant: productVariant.id };
 
-    return this.inventoryService.buildConnection(query, args);
+    // filter for correct product variant
+    const filter = { productVariant: productVariant.id };
+
+    return this.inventoryService.buildConnection(query, { ...args, filter });
   }
 
   @Roles(Role.BUYER, Role.EMPLOYEE, Role.SITE_ADMIN)
@@ -48,6 +48,7 @@ export class ProductVariantResolver {
   })
   async inventoryCount(
     @Parent() productVariant: ProductVariant,
+
   ): Promise<Number> {
     this.logger.log(
       `Resolving Inventory Count for ProductVariant: ${JSON.stringify(

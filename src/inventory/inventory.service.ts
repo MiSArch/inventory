@@ -4,7 +4,7 @@ import { UpdateProductItemInput } from './dto/update-product-item.input';
 import { InjectModel } from '@nestjs/mongoose';
 import { ProductItem } from './entities/product-item.entity';
 import { Model } from 'mongoose';
-import { FindProductItemArgs } from './dto/find-product-item.input';
+import { FindProductItemArgs } from './dto/find-product-items.input';
 import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 import { ReserveProductItemsBatchInput } from './dto/reserve-product-items-batch.input';
 import { ProductVariantPartialService } from 'src/product-variant-partial/product-variant-partial.service';

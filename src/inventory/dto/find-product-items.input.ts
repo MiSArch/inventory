@@ -5,7 +5,7 @@ import { MAX_INT32 } from 'src/shared/constants/constants';
 import { ProductItemFilter } from './filter-product-item.input';
 
 @ArgsType()
-export class FindProductItemArgs {
+export class FindProductItemsArgs {
   @Field(() => Int, {
     description: 'Number of items to skip',
     nullable: true,
