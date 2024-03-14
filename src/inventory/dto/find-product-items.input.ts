@@ -1,5 +1,5 @@
 import { Field, Int, ArgsType } from '@nestjs/graphql';
-import { Max, Min } from 'class-validator';
+import { Min } from 'class-validator';
 import { ProductItemOrder } from './order-directions.input';
 import { MAX_INT32 } from 'src/shared/constants/constants';
 import { ProductItemFilter } from './filter-product-item.input';

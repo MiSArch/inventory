@@ -41,7 +41,6 @@ export class ProductVariantResolver {
     return this.inventoryService.buildConnection(query, { ...args, filter });
   }
 
-  @Roles(Role.BUYER, Role.EMPLOYEE, Role.SITE_ADMIN)
   @ResolveField(() => Number, {
     description: 'The number of product items in stock',
   })
