@@ -35,7 +35,6 @@ export class ProductVariantResolver {
 
     // get query keys to avoid unnecessary workload
     const query = queryKeys(info);
-
     // filter for correct product variant
     const filter = { productVariant: productVariant.id };
 

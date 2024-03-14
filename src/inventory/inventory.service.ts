@@ -37,6 +37,7 @@ export class InventoryService {
       )}`,
     );
 
+    // validate product variants existence
     if (
       !(await this.productVariantPartialService.findById(
         createProductItemBatchInput.productVariantId,
@@ -102,7 +103,7 @@ export class InventoryService {
       .skip(skip)
       .sort({ [orderBy.field]: orderBy.direction });
 
-    this.logger.debug(`{findAll} returning ${productItems.length} results`);
+    this.logger.debug(`{find} returning ${productItems.length} results`);
 
     return productItems;
   }
@@ -143,6 +144,7 @@ export class InventoryService {
       `{update} for ${_id} input: ${JSON.stringify(updateProductItemInput)}`,
     );
 
+    // validate product variants existence
     if (!(await this.productVariantPartialService.findById(productVariantId))) {
       throw new NotFoundException(
         `ProductVariant with ID "${productVariantId}" not found`,
@@ -189,8 +191,7 @@ export class InventoryService {
 
   /**
    * Counts the number of product items for a given product variant and status.
-   * @param productVariant The product variant to count product items for.
-   * @param status The status to filter the product items by.
+   * @param filter The filter to apply to the count operation.
    * @returns A promise that resolves to the count of product items.
    */
   async count(filter: any): Promise<number> {
@@ -206,7 +207,6 @@ export class InventoryService {
    * Builds a connection to product items based on the provided arguments and filter.
    * @param query - An array of strings indicating the requested fields in the query.
    * @param args - The pagination and ordering arguments.
-   * @param filter - An optional filter to apply when finding product items.
    * @returns A promise that resolves to a ProductItemConnection.
    */
   async buildConnection(
@@ -216,6 +216,8 @@ export class InventoryService {
     const { first, skip } = args;
     let connection = new ProductItemConnection();
 
+    // Every query that returns any element needs the 'nodes' part
+    // as per the GraphQL Federation standard
     if (query.includes('nodes')) {
       // default order is ascending by id
       if (!args.orderBy) {
@@ -256,19 +258,31 @@ export class InventoryService {
   async reserveProductItemBatch(
     reserveInput: ReserveProductItemsBatchInput,
   ): Promise<ProductItem[]> {
+    const { productVariantId, number, orderId } = reserveInput;
+
+    // validate product variants existence
+    if (!(await this.productVariantPartialService.findById(productVariantId))) {
+      throw new NotFoundException(
+        `ProductVariant with ID "${productVariantId}" not found`,
+      );
+    }
     // find the product items of the required product variant
     const productItems = await this.productItemModel
       .find({
-        productVariant: reserveInput.productVariantId,
+        productVariant: productVariantId,
         inventoryStatus: ProductItemStatus.IN_STORAGE,
       })
-      .limit(reserveInput.number);
+      .limit(number);
 
-    if (productItems.length < reserveInput.number) {
+    if (productItems.length < number) {
       throw new NotFoundException(
-        `Not enough product items available for product variant "${reserveInput.productVariantId}"`,
+        `Not enough product items available for product variant "${productVariantId}"`,
       );
     }
+
+    this.logger.debug(
+      `Reserving ${number} product items of product variant: ${productVariantId}`,
+    );
 
     // set the inventory status of the selected product items to reserved
     const ids = productItems.map((productItem) => productItem._id);
@@ -277,7 +291,7 @@ export class InventoryService {
       {
         $set: {
           inventoryStatus: ProductItemStatus.RESERVED,
-          orderId: reserveInput.orderId,
+          orderId: orderId,
         },
       },
       { multi: true, upsert: true },
