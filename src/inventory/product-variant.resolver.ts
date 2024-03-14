@@ -47,7 +47,6 @@ export class ProductVariantResolver {
   })
   async inventoryCount(
     @Parent() productVariant: ProductVariant,
-
   ): Promise<Number> {
     this.logger.log(
       `Resolving Inventory Count for ProductVariant: ${JSON.stringify(
