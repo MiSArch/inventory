@@ -5,6 +5,7 @@ import { ProductVariantPartial, ProductVariantPartialSchema } from './entities/p
 
 @Module({
   imports:[
+    // setup the MongooseModule with the ProductVariantPartial entity
     MongooseModule.forFeature([
       { name: ProductVariantPartial.name, schema: ProductVariantPartialSchema },
     ]),

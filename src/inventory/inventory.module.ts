@@ -8,6 +8,7 @@ import { ProductVariantPartialModule } from 'src/product-variant-partial/product
 
 @Module({
   imports: [
+    // setup the MongooseModule with the ProductItem entity
     MongooseModule.forFeature([
       { name: ProductItem.name, schema: ProductItemSchema },
     ]),

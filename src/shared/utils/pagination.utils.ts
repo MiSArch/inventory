@@ -1,8 +1,12 @@
 import { Field, ObjectType, Int } from '@nestjs/graphql';
 import { Type } from '@nestjs/common';
 import { IPaginatedType } from '../interfaces/pagination.interface';
-import { ProductItem } from 'src/inventory/entities/product-item.entity';
 
+/**
+ * Creates a paginated type for a given class reference.
+ * @param classRef - The class reference for the items in the pagination.
+ * @returns The paginated type.
+ */
 export function Paginated<T>(classRef: Type<T>): Type<IPaginatedType<T>> {
   @ObjectType({ isAbstract: true })
   abstract class PaginatedType implements IPaginatedType<T> {

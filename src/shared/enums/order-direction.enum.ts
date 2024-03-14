@@ -7,6 +7,7 @@ export enum OrderDirection {
     DESC = -1,
 }
 
+// Register the OrderDirection enum with GraphQL
 registerEnumType(OrderDirection, {
     name: 'OrderDirection',
     description: 'The direction to order a list of items by',

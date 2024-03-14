@@ -38,6 +38,7 @@ import { HealthModule } from './health/health.module';
     EventModule,
     HealthModule,
   ],
+  // Provide the RolesGuard as a global guard
   providers: [{
     provide: 'APP_GUARD',
     useClass: RolesGuard

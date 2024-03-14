@@ -9,27 +9,55 @@ type ProductVariant
   id: UUID!
 
   """A product item connection for referenced product items in stock"""
-  productItems: ProductItemConnection
+  productItems(
+    """Number of items to skip"""
+    skip: Int = 0
+
+    """Number of items to return"""
+    first: Int = 2147483647
+
+    """Ordering"""
+    orderBy: ProductItemOrder
+
+    """Filtering"""
+    filter: ProductItemOfProductVariantFilter
+  ): ProductItemConnection
+
+  """The number of product items in stock"""
+  inventoryCount: Int!
 }
 
 """A universally unique identifier compliant UUID Scalar"""
 scalar UUID
 
-"""A product Item of a product variant"""
-type ProductItem
-  @key(fields: "id")
-{
-  """The uuid identifier of the product item"""
-  id: UUID!
+"""Ordering options for product items"""
+input ProductItemOrder {
+  """The field to order by"""
+  field: ProductItemOrderField
 
-  """The corresponding product variant"""
-  productVariant: ProductVariant!
+  """The direction to order by"""
+  direction: OrderDirection
+}
 
-  """Describes the inventory status of the product item"""
-  inventoryStatus: ProductItemStatus!
+"""The field to order Product Items by"""
+enum ProductItemOrderField {
+  """Order Product Items by their ID"""
+  ID
+}
 
-  """Reference to the order that reserved the product item"""
-  orderId: UUID
+"""The direction to order a list of items by"""
+enum OrderDirection {
+  """Ascending Order"""
+  ASC
+
+  """Decending Order"""
+  DESC
+}
+
+"""Filtering options for product items of product variants"""
+input ProductItemOfProductVariantFilter {
+  """Current product item status"""
+  inventoryStatus: ProductItemStatus
 }
 
 """The status of an individual product item in the inventory"""
@@ -56,6 +84,23 @@ enum ProductItemStatus {
   LOST
 }
 
+"""A product Item of a product variant"""
+type ProductItem
+  @key(fields: "id")
+{
+  """The uuid identifier of the product item"""
+  id: UUID!
+
+  """The corresponding product variant"""
+  productVariant: ProductVariant!
+
+  """Describes the inventory status of the product item"""
+  inventoryStatus: ProductItemStatus!
+
+  """Reference to the order that reserved the product item"""
+  orderId: UUID
+}
+
 """A connection of product items"""
 type ProductItemConnection {
   """The resulting items"""
@@ -69,7 +114,7 @@ type ProductItemConnection {
 }
 
 type Query {
-  """Retrieves all product items"""
+  """Retrieves all product items matching the filter"""
   productItems(
     """Number of items to skip"""
     skip: Int = 0
@@ -79,21 +124,9 @@ type Query {
 
     """Ordering"""
     orderBy: ProductItemOrder
-  ): ProductItemConnection!
 
-  """Returns product items in inventory of a product variant"""
-  productItemsByProductVariant(
-    """UUID of product variant for stock count"""
-    productVariantId: UUID!
-
-    """Number of items to skip"""
-    skip: Int = 0
-
-    """Number of items to return"""
-    first: Int = 2147483647
-
-    """Ordering"""
-    orderBy: ProductItemOrder
+    """Filtering"""
+    filter: ProductItemFilter
   ): ProductItemConnection!
 
   """Retrieves a product item by id"""
@@ -103,28 +136,13 @@ type Query {
   ): ProductItem!
 }
 
-"""Ordering options for product items"""
-input ProductItemOrder {
-  """The field to order by"""
-  field: ProductItemOrderField
+"""Filtering options for product items"""
+input ProductItemFilter {
+  """Linked product variant id"""
+  productVariant: UUID
 
-  """The direction to order by"""
-  direction: OrderDirection
-}
-
-"""The field to order Product Items by"""
-enum ProductItemOrderField {
-  """Order Product Items by their ID"""
-  ID
-}
-
-"""The direction to order a list of items by"""
-enum OrderDirection {
-  """Ascending Order"""
-  ASC
-
-  """Decending Order"""
-  DESC
+  """Current product item status"""
+  inventoryStatus: ProductItemStatus
 }
 
 type Mutation {
