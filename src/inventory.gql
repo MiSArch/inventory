@@ -9,7 +9,16 @@ type ProductVariant
   id: UUID!
 
   """A product item connection for referenced product items in stock"""
-  productItems: ProductItemConnection
+  productItems(
+    """Number of items to skip"""
+    skip: Int = 0
+
+    """Number of items to return"""
+    first: Int = 2147483647
+
+    """Ordering"""
+    orderBy: ProductItemOrder
+  ): ProductItemConnection
 
   """The number of product items in stock"""
   inventoryCount: Int!
@@ -17,6 +26,30 @@ type ProductVariant
 
 """A universally unique identifier compliant UUID Scalar"""
 scalar UUID
+
+"""Ordering options for product items"""
+input ProductItemOrder {
+  """The field to order by"""
+  field: ProductItemOrderField
+
+  """The direction to order by"""
+  direction: OrderDirection
+}
+
+"""The field to order Product Items by"""
+enum ProductItemOrderField {
+  """Order Product Items by their ID"""
+  ID
+}
+
+"""The direction to order a list of items by"""
+enum OrderDirection {
+  """Ascending Order"""
+  ASC
+
+  """Decending Order"""
+  DESC
+}
 
 """A product Item of a product variant"""
 type ProductItem
@@ -94,31 +127,7 @@ type Query {
   ): ProductItem!
 }
 
-"""Ordering options for product items"""
-input ProductItemOrder {
-  """The field to order by"""
-  field: ProductItemOrderField
-
-  """The direction to order by"""
-  direction: OrderDirection
-}
-
-"""The field to order Product Items by"""
-enum ProductItemOrderField {
-  """Order Product Items by their ID"""
-  ID
-}
-
-"""The direction to order a list of items by"""
-enum OrderDirection {
-  """Ascending Order"""
-  ASC
-
-  """Decending Order"""
-  DESC
-}
-
-"""Ordering options for product items"""
+"""Filtering options for product items"""
 input ProductItemFilter {
   """Linked product variant id"""
   productVariant: UUID
