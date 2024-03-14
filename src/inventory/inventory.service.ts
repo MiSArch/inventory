@@ -4,7 +4,7 @@ import { UpdateProductItemInput } from './dto/update-product-item.input';
 import { InjectModel } from '@nestjs/mongoose';
 import { ProductItem } from './entities/product-item.entity';
 import { Model } from 'mongoose';
-import { FindProductItemArgs } from './dto/find-product-items.input';
+import { FindProductItemsArgs } from './dto/find-product-items.input';
 import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 import { ReserveProductItemsBatchInput } from './dto/reserve-product-items-batch.input';
 import { ProductVariantPartialService } from 'src/product-variant-partial/product-variant-partial.service';
@@ -88,7 +88,7 @@ export class InventoryService {
    * @param filter - The filter to apply to the query.
    * @returns A promise that resolves to an array of product items.
    */
-  async find(args: FindProductItemArgs, filter: any): Promise<ProductItem[]> {
+  async find(args: FindProductItemsArgs, filter: any): Promise<ProductItem[]> {
     const { first, skip, orderBy } = args;
     this.logger.debug(
       `{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(
@@ -211,7 +211,7 @@ export class InventoryService {
    */
   async buildConnection(
     query: string[],
-    args: FindProductItemArgs,
+    args: FindProductItemsArgs,
   ): Promise<ProductItemConnection> {
     const { first, skip } = args;
     let connection = new ProductItemConnection();
