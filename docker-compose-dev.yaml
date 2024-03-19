@@ -11,11 +11,12 @@ services:
     # Mount our host Directory to the docker container
     # Mount (.) current directory to the docker container src/app
     # reflect file changes from host to container
-    # maps schema to reflect changes in the container
+    # maps schemata to reflect changes in the container
     volumes:
       - .:/src/inventory
       - /src/inventory/node_modules
       - ./src/inventory.gql:/src/inventory/src/inventory.gql
+      - ./src/inventory-unfederated.gql:/src/inventory/src/inventory-unfederated.gql
     command: npm run start:dev
   inventory-db:
     extends:

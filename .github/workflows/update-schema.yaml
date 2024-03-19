@@ -20,6 +20,7 @@ jobs:
       - name: Save graphql schemas
         run: |
           cp ./src/inventory.gql ./schemas/inventory.graphql
+          cp ./src/inventory-unfederated.gql ./schemas/inventory-unfederated.graphql
       - uses: peter-evans/create-pull-request@v5
         with:
           path: ./schemas

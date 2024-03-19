@@ -7,6 +7,7 @@ import { join } from 'path';
 import { printSubgraphSchema } from '@apollo/subgraph';
 import { logger } from './shared/logger/winston.config';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { printSchema } from 'graphql';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -22,6 +23,8 @@ async function bootstrap() {
   const { schema } = app.get(GraphQLSchemaHost);
   writeFileSync(join(process.cwd(), `/src/inventory.gql`), printSubgraphSchema(schema));
 
+  // generate adjusted schema for rust services
+  writeFileSync(join(process.cwd(), `/src/inventory-unfederated.gql`), printSchema(schema));
   // logging
   app.useLogger(logger)
 }
