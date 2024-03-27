@@ -18,8 +18,10 @@ jobs:
           repository: "misarch/schemas"
           path: "schemas"
       - name: Save graphql schemas
-        run: |
-          cp ./src/inventory.gql ./schemas/inventory.graphql
+        uses: misarch/graphql-schema-transform@v1
+        with:
+          schema: src/inventory.gql
+          target: schemas/inventory.graphql
       - uses: peter-evans/create-pull-request@v5
         with:
           path: ./schemas
