@@ -5,6 +5,7 @@ import { EventPublisherService } from './event-publisher.service';
 import { ReservationSucceededDTO } from './dto/inventory/reservation-succeeded.dto';
 import { ReservationFailedDTO } from './dto/inventory/reservation-failed.dto';
 import { OrderDTO } from './dto/order/order.dto';
+import { ProductVariantCreatedDto } from './dto/catalog/product-variant-created.dto';
 
 
 @Controller()
@@ -44,9 +45,9 @@ export class EventController {
    * @returns A promise that resolves to void.
   */
   @Post('product-variant-created')
-  async subscribeToProductVariantEvent(@Body() body: any): Promise<void> {
+  async subscribeToProductVariantEvent(@Body('data') dto: ProductVariantCreatedDto): Promise<void> {
     // Handle incoming event data from Dapr
-    const id = body.data.id;
+    const { id } = dto;
     this.logger.log(`Received event for product variant with id: ${id}`);
     // Call the product variant service to create a new product variant
     this.productVariantService.create(id);
