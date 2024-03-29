@@ -61,7 +61,7 @@ export class EventController {
    * @returns A promise that resolves to void.
   */
   @Post('order-created')
-  async subscribeToOrderEvent(@Body() order: OrderDTO): Promise<void> {
+  async subscribeToOrderEvent(@Body('data') order: OrderDTO): Promise<void> {
     // Handle incoming event data from Dapr
     this.logger.log(`Received event for order with id: ${order.id}`);
     
