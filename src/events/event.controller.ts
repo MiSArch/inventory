@@ -5,6 +5,7 @@ import { EventPublisherService } from './event-publisher.service';
 import { ReservationSucceededDTO } from './dto/inventory/reservation-succeeded.dto';
 import { ReservationFailedDTO } from './dto/inventory/reservation-failed.dto';
 import { OrderDTO } from './dto/order/order.dto';
+import { ProductVariantCreatedDto } from './dto/catalog/product-variant-created.dto';
 
 
 @Controller()
@@ -44,9 +45,9 @@ export class EventController {
    * @returns A promise that resolves to void.
   */
   @Post('product-variant-created')
-  async subscribeToProductVariantEvent(@Body() body: any): Promise<void> {
+  async subscribeToProductVariantEvent(@Body('data') dto: ProductVariantCreatedDto): Promise<void> {
     // Handle incoming event data from Dapr
-    const id = body.data.id;
+    const { id } = dto;
     this.logger.log(`Received event for product variant with id: ${id}`);
     // Call the product variant service to create a new product variant
     this.productVariantService.create(id);
@@ -62,7 +63,7 @@ export class EventController {
   @Post('order-created')
   async subscribeToOrderEvent(@Body('data') order: OrderDTO): Promise<void> {
     // Handle incoming event data from Dapr
-    this.logger.log(`Received event for order with id: ${order.id} with orderItems ${order.orderItems}`);
+    this.logger.log(`Received event for order with id: ${order.id}`);
     
     try {
       // Attempt to reserve all product items for the order
@@ -75,6 +76,7 @@ export class EventController {
 
       // Check total order reservation status
       if (unsuccessfulProductVariantIds.length > 0) {
+        this.logger.error(`Failed to reserve product items for order with id: ${order.id}`);
         // Not all were successful
         this.createInventoryErrorEvent(order, unsuccessfulProductVariantIds);
         // release the reserved product items
@@ -109,6 +111,7 @@ export class EventController {
             });
           return { productVariantId, success: result !== undefined };
         } catch (error) {
+          this.logger.error(`Error reserving product item with productVariantId "${productVariantId}": ${error}`);
           // A failure in reservation means there were not enough product items
           return { productVariantId, success: false };
         }
