@@ -9,6 +9,9 @@ import { queryKeys } from 'src/shared/utils/query.info.utils';
 import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 import { FindProductItemsByProductVariantArgs } from './dto/find-product-items-by-product-variant.input';
 
+/**
+ * Resolver for Foreign ProductVariant objects.
+ */
 @Resolver(() => ProductVariant)
 export class ProductVariantResolver {
   constructor(

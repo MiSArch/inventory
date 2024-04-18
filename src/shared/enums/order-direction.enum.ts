@@ -1,5 +1,8 @@
 import { registerEnumType } from "@nestjs/graphql";
 
+/**
+ * Enum representing the direction by which a list of items can be ordered.
+ */
 export enum OrderDirection {
     // Ascending order
     ASC = 1,

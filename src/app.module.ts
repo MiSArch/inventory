@@ -13,6 +13,9 @@ import { EventModule } from './events/event.module';
 import { RolesGuard } from './shared/guards/roles.guard';
 import { HealthModule } from './health/health.module';
 
+/**
+ * The main module of the application.
+ */
 @Module({
   imports: [
     // For Configuration from environment variables
@@ -21,13 +24,15 @@ import { HealthModule } from './health/health.module';
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,
       buildSchemaOptions: {
-        numberScalarMode: 'integer'
+        numberScalarMode: 'integer',
       },
       context: ({ req }) => ({ request: req }),
       resolvers: { UUID: UUID },
       autoSchemaFile: {
         federation: 2,
       },
+      // necessary to use guards on @ResolveField with drawbacks on performance
+      fieldResolverEnhancers: ['guards'],
     }),
     // For data persistence
     MongooseModule.forRoot(process.env.DATABASE_URI, {
@@ -39,9 +44,11 @@ import { HealthModule } from './health/health.module';
     HealthModule,
   ],
   // Provide the RolesGuard as a global guard
-  providers: [{
-    provide: 'APP_GUARD',
-    useClass: RolesGuard
-  }]
+  providers: [
+    {
+      provide: 'APP_GUARD',
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

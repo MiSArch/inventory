@@ -1,6 +1,8 @@
 import { registerEnumType } from "@nestjs/graphql";
 
-// Enum for the status of an individual product item in the inventory
+/**
+ * Represents the status of a product item in the inventory.
+ */
 export enum ProductItemStatus {
     // The item is in storage, not yet sold or reserved
     IN_STORAGE = 'IN_STORAGE',

@@ -3,6 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ProductVariantPartial } from './entities/product-variant-partial.entity';
 import { Model } from 'mongoose';
 
+/**
+ * Service for handling product variant partials.
+ */
 @Injectable()
 export class ProductVariantPartialService {
   constructor(
