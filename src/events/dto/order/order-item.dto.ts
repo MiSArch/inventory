@@ -1,6 +1,4 @@
-import { Type } from 'class-transformer';
-import { IsDate, IsUUID, ValidateNested, IsArray, IsInt, Min } from 'class-validator';
-import { ShipmentDTO } from './shipment.dto';
+import { IsUUID, IsArray, IsInt, Min, IsDateString } from 'class-validator';
 /**
  * Describes DTO of an OrderItem of an Order.
  *
@@ -18,7 +16,7 @@ import { ShipmentDTO } from './shipment.dto';
 export class OrderItemDTO {
   @IsUUID()
   id: string;
-  @IsDate()
+  @IsDateString()
   createdAt: Date;
   @IsUUID()
   productVariantVersionId: string;
@@ -34,9 +32,8 @@ export class OrderItemDTO {
   @IsInt()
   @Min(0)
   compensatableAmount: number;
-  @ValidateNested()
-  @Type(() => ShipmentDTO)
-  shipment: ShipmentDTO;
+  @IsUUID()
+  shipmentMethodId: string;
   @IsArray()
   @IsUUID("4", { each: true })
   discountIds: string[];

@@ -4,6 +4,9 @@ import { ProductVariantPartialModule } from 'src/product-variant-partial/product
 import { InventoryModule } from 'src/inventory/inventory.module';
 import { EventPublisherService } from './event-publisher.service';
 
+/**
+ * Module for handling events.
+ */
 @Module({
   imports: [ProductVariantPartialModule, InventoryModule],
   providers: [Logger, EventPublisherService],

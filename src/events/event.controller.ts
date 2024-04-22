@@ -7,7 +7,9 @@ import { ReservationFailedDTO } from './dto/inventory/reservation-failed.dto';
 import { OrderDTO } from './dto/order/order.dto';
 import { ProductVariantCreatedDto } from './dto/catalog/product-variant-created.dto';
 
-
+/**
+ * Controller for incoming Events
+ */
 @Controller()
 export class EventController {
 

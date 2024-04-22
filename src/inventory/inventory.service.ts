@@ -11,6 +11,9 @@ import { ProductVariantPartialService } from 'src/product-variant-partial/produc
 import { ProductItemConnection } from './graphql-types/product-item-connection.dto';
 import { ProductItemOrderField } from 'src/shared/enums/product-item-order-fields.enum';
 
+/**
+ * Service for handling the e-stores inventory.
+ */
 @Injectable()
 export class InventoryService {
   constructor(

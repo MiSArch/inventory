@@ -1,12 +1,12 @@
 import { Type } from 'class-transformer';
 import {
-  IsDate,
   IsEnum,
   IsOptional,
   IsUUID,
   ValidateNested,
   IsArray,
   IsInt,
+  IsDateString,
 } from 'class-validator';
 import { OrderStatus } from './order-status';
 import { RejectionReason } from './order-rejection-reason';
@@ -32,14 +32,14 @@ export class OrderDTO {
   id: string;
   @IsUUID()
   userId: string;
-  @IsDate()
+  @IsDateString()
   createdAt: Date;
   @IsEnum(OrderStatus)
   orderStatus: OrderStatus;
   @IsInt()
   compensatableOrderAmount: number;
   @IsOptional()
-  @IsDate()
+  @IsDateString()
   placedAt?: Date;
   @IsOptional()
   @IsEnum(RejectionReason)

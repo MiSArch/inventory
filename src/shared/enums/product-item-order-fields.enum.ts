@@ -1,5 +1,9 @@
 import { registerEnumType } from "@nestjs/graphql";
 
+
+/**
+ * Enum representing the fields by which product items can be ordered.
+ */
 export enum ProductItemOrderField {
     // Order Product Items by their ID
     ID = "_id"

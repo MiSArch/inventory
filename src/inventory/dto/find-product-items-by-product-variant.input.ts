@@ -4,6 +4,9 @@ import { ProductItemOrder } from './order-directions.input';
 import { MAX_INT32 } from 'src/shared/constants/constants';
 import { ProductItemOfProductVariantFilter } from './filter-product-item-by-status.input';
 
+/**
+ * Arguments for finding product items by product variant.
+ */
 @ArgsType()
 export class FindProductItemsByProductVariantArgs {
   @Field(() => Int, {

@@ -19,11 +19,13 @@ import { IPaginatedType } from 'src/shared/interfaces/pagination.interface';
 import { ProductItemConnection } from 'src/inventory/graphql-types/product-item-connection.dto';
 import { queryKeys } from 'src/shared/utils/query.info.utils';
 import { Logger } from '@nestjs/common';
-import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 import { ReserveProductItemsBatchInput } from './dto/reserve-product-items-batch.input';
 import { Roles } from 'src/shared/decorators/roles.decorator';
 import { Role } from 'src/shared/enums/role.enum';
 
+/**
+ * Resolver for ProductItem objects.
+ */
 @Resolver(() => ProductItem)
 export class InventoryResolver {
   constructor(
