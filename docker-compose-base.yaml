@@ -44,7 +44,7 @@ services:
         "--app-id",
         "inventory",
         "--app-port",
-        "8080",
+        "${EXPERIMENT_CONFIG_SIDECAR_PORT:-8080}",
         "--dapr-http-port",
         "3500",
         "-placement-host-address",
