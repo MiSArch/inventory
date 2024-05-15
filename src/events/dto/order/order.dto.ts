@@ -13,6 +13,11 @@ import { OrderStatus } from './order-status';
 import { RejectionReason } from './order-rejection-reason';
 import { OrderItemDTO } from './order-item.dto';
 
+class PaymentAuthorization {
+  @IsNumber()
+  CVC: number;
+}
+
 /**
  * DTO of an order of a user.
  *
@@ -61,9 +66,4 @@ export class OrderDTO {
   @Type(() => PaymentAuthorization)
   payment_authorization?: PaymentAuthorization;
   vat_number: String;
-}
-
-class PaymentAuthorization {
-  @IsNumber()
-  CVC: number;
 }

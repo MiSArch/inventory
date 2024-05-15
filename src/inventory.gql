@@ -17,7 +17,7 @@ type ProductVariant
     first: Int = 2147483647
 
     """Ordering"""
-    orderBy: ProductItemOrder
+    orderBy: ProductItemOrder = {field: ID, direction: ASC}
 
     """Filtering"""
     filter: ProductItemOfProductVariantFilter
@@ -123,7 +123,7 @@ type Query {
     first: Int = 2147483647
 
     """Ordering"""
-    orderBy: ProductItemOrder
+    orderBy: ProductItemOrder = {field: ID, direction: ASC}
 
     """Filtering"""
     filter: ProductItemFilter

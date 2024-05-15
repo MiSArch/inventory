@@ -10,6 +10,7 @@ import { ReserveProductItemsBatchInput } from './dto/reserve-product-items-batch
 import { ProductVariantPartialService } from 'src/product-variant-partial/product-variant-partial.service';
 import { ProductItemConnection } from './graphql-types/product-item-connection.dto';
 import { ProductItemOrderField } from 'src/shared/enums/product-item-order-fields.enum';
+import { ProductItemFilter } from './dto/filter-product-item.input';
 
 /**
  * Service for handling the e-stores inventory.
@@ -41,15 +42,9 @@ export class InventoryService {
     );
 
     // validate product variants existence
-    if (
-      !(await this.productVariantPartialService.findById(
-        createProductItemBatchInput.productVariantId,
-      ))
-    ) {
-      throw new NotFoundException(
-        `ProductVariant with ID "${createProductItemBatchInput.productVariantId}" not found`,
-      );
-    }
+    await this.productVariantPartialService.findByIdOrFail(
+      createProductItemBatchInput.productVariantId
+    )
 
     // handle batch creation in a transaction to be able to roll back
     const session = await this.productItemModel.startSession();
@@ -88,11 +83,14 @@ export class InventoryService {
   /**
    * Retrieves product items based on the provided arguments.
    * @param args - The arguments for pagination and sorting.
-   * @param filter - The filter to apply to the query.
    * @returns A promise that resolves to an array of product items.
    */
-  async find(args: FindProductItemsArgs, filter: any): Promise<ProductItem[]> {
-    const { first, skip, orderBy } = args;
+  async find(args: FindProductItemsArgs): Promise<ProductItem[]> {
+    const { first, skip, filter } = args;
+    let { orderBy } = args;
+
+    // build query
+    const query = await this.buildQuery(args.filter);
     this.logger.debug(
       `{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(
         filter,
@@ -101,7 +99,7 @@ export class InventoryService {
 
     // retrieve the product items based on the provided arguments
     const productItems = await this.productItemModel
-      .find(filter)
+      .find(query)
       .limit(first)
       .skip(skip)
       .sort({ [orderBy.field]: orderBy.direction });
@@ -148,11 +146,7 @@ export class InventoryService {
     );
 
     // validate product variants existence
-    if (!(await this.productVariantPartialService.findById(productVariantId))) {
-      throw new NotFoundException(
-        `ProductVariant with ID "${productVariantId}" not found`,
-      );
-    }
+    await this.productVariantPartialService.findByIdOrFail(productVariantId);
 
     const existingProductItems = await this.productItemModel
       .findOneAndUpdate(
@@ -236,16 +230,8 @@ export class InventoryService {
     // Every query that returns any element needs the 'nodes' part
     // as per the GraphQL Federation standard
     if (query.includes('nodes')) {
-      // default order is ascending by id
-      if (!args.orderBy) {
-        args.orderBy = {
-          field: ProductItemOrderField.ID,
-          direction: 1,
-        };
-      }
-
       // get nodes according to args
-      connection.nodes = await this.find(args, args.filter);
+      connection.nodes = await this.find(args);
     }
 
     if (query.includes('totalCount') || query.includes('hasNextPage')) {
@@ -278,11 +264,7 @@ export class InventoryService {
     const { productVariantId, number, orderId } = reserveInput;
 
     // validate product variants existence
-    if (!(await this.productVariantPartialService.findById(productVariantId))) {
-      throw new NotFoundException(
-        `ProductVariant with ID "${productVariantId}" not found`,
-      );
-    }
+    await this.productVariantPartialService.findByIdOrFail(productVariantId);
     // find the product items of the required product variant
     const productItems = await this.productItemModel
       .find({
@@ -349,5 +331,24 @@ export class InventoryService {
     );
 
     return this.productItemModel.find({ _id: { $in: ids } });
+  }
+
+    /**
+   * Builds a query object based on the provided filter.
+   * @param filter - The filter object containing the criteria for the query.
+   * @returns The query object.
+   */
+  async buildQuery(filter: ProductItemFilter | undefined): Promise<{
+    productVariant?: string;
+    inventoryStatus?: string;
+  }> {
+    const query: any = {};
+
+    if (!filter) { return query; }
+
+    if (filter.productVariant) { query.status = filter.productVariant; }
+
+    if (filter.inventoryStatus) { query.createdAt = filter.inventoryStatus; }
+    return query;
   }
 }

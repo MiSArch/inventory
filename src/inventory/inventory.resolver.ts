@@ -22,6 +22,7 @@ import { Logger } from '@nestjs/common';
 import { ReserveProductItemsBatchInput } from './dto/reserve-product-items-batch.input';
 import { Roles } from 'src/shared/decorators/roles.decorator';
 import { Role } from 'src/shared/enums/role.enum';
+import { GraphQLResolveInfo } from 'graphql';
 
 /**
  * Resolver for ProductItem objects.
@@ -62,7 +63,7 @@ export class InventoryResolver {
   })
   async find(
     @Args() args: FindProductItemsArgs,
-    @Info() info,
+    @Info() info: GraphQLResolveInfo,
   ): Promise<IPaginatedType<ProductItem>> {
     this.logger.log(`Resolving productItems for ${JSON.stringify(args)}`);
 

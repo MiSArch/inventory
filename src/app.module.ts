@@ -1,6 +1,6 @@
 import { Logger, Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import {
   ApolloFederationDriver,
   ApolloFederationDriverConfig,
@@ -19,14 +19,13 @@ import { HealthModule } from './health/health.module';
 @Module({
   imports: [
     // For Configuration from environment variables
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: true }),
     // For GraphQL Federation v2
     GraphQLModule.forRoot<ApolloFederationDriverConfig>({
       driver: ApolloFederationDriver,
       buildSchemaOptions: {
         numberScalarMode: 'integer',
       },
-      context: ({ req }) => ({ request: req }),
       resolvers: { UUID: UUID },
       autoSchemaFile: {
         federation: 2,
@@ -35,8 +34,13 @@ import { HealthModule } from './health/health.module';
       fieldResolverEnhancers: ['guards'],
     }),
     // For data persistence
-    MongooseModule.forRoot(process.env.DATABASE_URI, {
-      dbName: process.env.DATABASE_NAME,
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>("DATABASE_URI", "mongodb://localhost:27017"),
+        dbName: configService.get<string>("DATABASE_NAME", "test"),
+      }),
+      inject: [ConfigService],
     }),
     ProductVariantPartialModule,
     InventoryModule,
