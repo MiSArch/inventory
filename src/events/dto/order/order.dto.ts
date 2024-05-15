@@ -7,6 +7,7 @@ import {
   IsArray,
   IsInt,
   IsDateString,
+  IsNumber,
 } from 'class-validator';
 import { OrderStatus } from './order-status';
 import { RejectionReason } from './order-rejection-reason';
@@ -26,6 +27,8 @@ import { OrderItemDTO } from './order-item.dto';
  * @property shipmentAddressId UUID of shipment address associated with the Order.
  * @property invoiceAddressId UUID of invoice address associated with the Order.
  * @property paymentInformationId UUID of payment information associated with the Order.
+ * @property payment_authorization Optional payment authorization information.
+ * @property vat_number VAT number.
  */
 export class OrderDTO {
   @IsUUID()
@@ -54,4 +57,13 @@ export class OrderDTO {
   invoiceAddressId: string;
   @IsUUID()
   paymentInformationId: string;
+  @ValidateNested()
+  @Type(() => PaymentAuthorization)
+  payment_authorization?: PaymentAuthorization;
+  vat_number: String;
+}
+
+class PaymentAuthorization {
+  @IsNumber()
+  CVC: number;
 }
