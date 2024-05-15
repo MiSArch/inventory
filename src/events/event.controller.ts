@@ -6,6 +6,9 @@ import { ReservationSucceededDTO } from './dto/inventory/reservation-succeeded.d
 import { ReservationFailedDTO } from './dto/inventory/reservation-failed.dto';
 import { OrderDTO } from './dto/order/order.dto';
 import { ProductVariantCreatedDto } from './dto/catalog/product-variant-created.dto';
+import { PaymentEnabledDto } from './dto/payment/payment-enabled.dto';
+import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
+import { ShipmentStatus, ShipmentStatusUpdatedDto } from './dto/shipment/shiptment-status-updated.dto';
 
 /**
  * Controller for incoming Events
@@ -22,7 +25,6 @@ export class EventController {
 
   /**
    * Subscribes to the product variant and order events.
-   * 
    * @returns A promise that resolves to an array of objects containing the pubsubName, topic, and route.
   */
   @Get('/dapr/subscribe')
@@ -36,13 +38,24 @@ export class EventController {
         pubsubName: 'pubsub',
         topic: 'order/order/created',
         route: 'order-created',
+      }, {
+        pubsubname: 'pubsub',
+        topic: 'payment/payment/enabled',
+        route: 'payment-enabled'
+      }, {
+        pubsubname: 'pubsub',
+        topic: 'shipment/shipment/status-updated',
+        route: 'shipment-status-updated'
+      }, {
+        pubsubname: 'pubsub',
+        topic: 'shipment/shipment/created',
+        route: 'shipment-created'
       }
   ];
   }
 
   /**
    * Endpoint for product variant creation events.
-   * 
    * @param body - The event data received from Dapr.
    * @returns A promise that resolves to void.
   */
@@ -58,7 +71,6 @@ export class EventController {
 
   /**
    * Endpoint for order creation events.
-   * 
    * @param orderDto - The order data received from Dapr.
    * @returns A promise that resolves to void.
   */
@@ -89,6 +101,77 @@ export class EventController {
       }
     } catch (error) {
       this.logger.error(`Error processing order event: ${error}`);
+    }
+  }
+
+  /**
+   * Endpoint for payment enabled events.
+   * Updates all product items in an order to the IN_FULFILLMENT status.
+   * @param paymentDto - The payment data received from Dapr.
+   * @returns A promise that resolves to void.
+  */
+  @Post('payment-enabled')
+  async subsribeToPaymentEvent(
+    @Body('data') paymentDto: PaymentEnabledDto
+  ): Promise<void> {
+    const { order } = paymentDto;
+    // Handle incoming event data from Dapr
+    this.logger.log(`Received payment enabled for order with id: ${order.id}`);
+    return this.inventoryService.updateOrderProductItemsStatus(
+      order.id, ProductItemStatus.IN_FULFILLMENT
+    );
+  }
+
+  /**
+   * Endpoint for shipment created events.
+   * Updates the status of the product items in an order to SHIPPED.
+   * @param shipmentDto - The shipment data received from Dapr.
+   * @returns A promise that resolves to void.
+  */
+  @Post('shipment-created')
+  async subscribeToShipmentCreatedEvent(
+    @Body('data') shipmentDto: ShipmentStatusUpdatedDto
+  ): Promise<void> {
+    const { orderId } = shipmentDto;
+    // create is for return process
+    if (!orderId) {
+      return;
+    }
+    this.logger.log(`Received shipment created event for order with id: ${orderId}`);
+    return this.inventoryService.updateOrderProductItemsStatus(
+      orderId,
+      ProductItemStatus.SHIPPED
+    );
+  }
+
+  /**
+   * Endpoint for shipment status updated events.
+   * Updates the status of the product items in an order based on the shipment status.
+   * @param shipmentDto - The shipment data received from Dapr.
+   * @returns A promise that resolves to void.
+  */
+  @Post('shipment-status-updated')
+  async subscribeToShipmentStatusUpdate(
+    @Body('data') shipmentDto: ShipmentStatusUpdatedDto
+  ): Promise<void> {
+    const { orderId, status } = shipmentDto;
+    // update is for return process
+    if (!orderId) {
+      return;
+    }
+    this.logger.log(`Received shipment status update for order with id: ${orderId}`);
+
+    switch (status) {
+      case ShipmentStatus.DELIVERED:
+        return this.inventoryService.updateOrderProductItemsStatus(
+          orderId,
+          ProductItemStatus.DELIVERED
+        );
+      case ShipmentStatus.FAILED:
+        return this.inventoryService.updateOrderProductItemsStatus(
+          orderId,
+          ProductItemStatus.LOST
+        );
     }
   }
 

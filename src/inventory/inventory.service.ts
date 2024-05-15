@@ -175,6 +175,20 @@ export class InventoryService {
     return existingProductItems;
   }
 
+  async updateOrderProductItemsStatus(
+    orderId: string,
+    status: ProductItemStatus,
+  ): Promise<void> {
+    this.logger.log(
+      `{updateOrderProductItemsStatus} Updating product items status for order: {${orderId}} to {${status}}`,
+    );
+
+    await this.productItemModel.updateMany(
+      { orderId },
+      { $set: { inventoryStatus: status } },
+    );
+  }
+
   /**
    * Deletes a product item by its ID.
    * @param _id The ID of the product item to delete.
