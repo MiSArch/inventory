@@ -26,7 +26,7 @@ import { HealthModule } from './health/health.module';
       buildSchemaOptions: {
         numberScalarMode: 'integer',
       },
-      context: ({ req }) => ({ request: req }),
+      context: ({ req }: { req: Request }) => ({ request: req }),
       resolvers: { UUID: UUID },
       autoSchemaFile: {
         federation: 2,
