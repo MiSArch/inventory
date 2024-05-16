@@ -10,6 +10,6 @@ export function queryKeys(info: GraphQLResolveInfo): string[] {
     return [];
   }
   return info.fieldNodes[0].selectionSet.selections
-    .filter(item => item.kind === "Field")
+    .filter((item) => item.kind === "Field")
     .map((item: FieldNode) => item.name.value);
 }

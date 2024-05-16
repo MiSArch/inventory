@@ -86,9 +86,7 @@ export class InventoryService {
    * @returns A promise that resolves to an array of product items.
    */
   async find(args: FindProductItemsArgs): Promise<ProductItem[]> {
-    const { first, skip, filter } = args;
-    let { orderBy } = args;
-
+    const { first, skip, filter, orderBy } = args;
     // build query
     const query = await this.buildQuery(args.filter);
     this.logger.debug(
@@ -205,7 +203,7 @@ export class InventoryService {
    * @param filter The filter to apply to the count operation.
    * @returns A promise that resolves to the count of product items.
    */
-  async count(filter: any): Promise<number> {
+  async count(filter: ProductItemFilter | undefined): Promise<number> {
     this.logger.debug(`{count} query: ${JSON.stringify(filter)}`);
     const count = await this.productItemModel.countDocuments(filter);
 

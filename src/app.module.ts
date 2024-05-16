@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import {
@@ -26,6 +26,7 @@ import { HealthModule } from './health/health.module';
       buildSchemaOptions: {
         numberScalarMode: 'integer',
       },
+      context: ({ req }) => ({ request: req }),
       resolvers: { UUID: UUID },
       autoSchemaFile: {
         federation: 2,

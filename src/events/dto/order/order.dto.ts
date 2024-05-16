@@ -65,5 +65,5 @@ export class OrderDTO {
   @ValidateNested()
   @Type(() => PaymentAuthorization)
   payment_authorization?: PaymentAuthorization;
-  vat_number: String;
+  vat_number: string;
 }
