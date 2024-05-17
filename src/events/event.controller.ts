@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Logger, Post } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, UnprocessableEntityException } from '@nestjs/common';
 import { ProductVariantPartialService } from 'src/product-variant-partial/product-variant-partial.service';
 import { InventoryService } from 'src/inventory/inventory.service';
 import { EventPublisherService } from './event-publisher.service';
@@ -75,7 +75,7 @@ export class EventController {
    * @returns A promise that resolves to void.
   */
   @Post('order-created')
-  async subscribeToOrderEvent(@Body('data') order: OrderDTO): Promise<void> {
+  async subscribeToOrderEvent(@Body('data') order: OrderDTO) {
     // Handle incoming event data from Dapr
     this.logger.log(`Received event for order with id: ${order.id}`);
     
@@ -94,13 +94,13 @@ export class EventController {
         // Not all were successful
         this.createInventoryErrorEvent(order, unsuccessfulProductVariantIds);
         // release the reserved product items
-        this.inventoryService.releaseProductItemBatch(order.id);
-      } else {
-        // All were successful
-        this.createInventorySuccessEvent(order);
+        return this.inventoryService.releaseProductItemBatch(order.id);
       }
+      // All were successful
+      this.createInventorySuccessEvent(order);
     } catch (error) {
       this.logger.error(`Error processing order event: ${error}`);
+      return new UnprocessableEntityException({ message: error.message });
     }
   }
 
