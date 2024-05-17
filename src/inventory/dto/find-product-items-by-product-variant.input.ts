@@ -4,6 +4,7 @@ import { ProductItemOrder } from './order-directions.input';
 import { MAX_INT32 } from 'src/shared/constants/constants';
 import { ProductItemOfProductVariantFilter } from './filter-product-item-by-status.input';
 import { ProductItemOrderField } from 'src/shared/enums/product-item-order-fields.enum';
+import { OrderDirection } from 'src/shared/enums/order-direction.enum';
 
 /**
  * Arguments for finding product items by product variant.
@@ -25,8 +26,7 @@ export class FindProductItemsByProductVariantArgs {
   first: number = MAX_INT32;
 
   @Field(() => ProductItemOrder, { description: 'Ordering', nullable: true })
-  // default order is ascending by id
-  orderBy: ProductItemOrder = { field: ProductItemOrderField.ID, direction: 1 };
+  orderBy?: ProductItemOrder;
 
   @Field(() => ProductItemOfProductVariantFilter, {
     description: 'Filtering',

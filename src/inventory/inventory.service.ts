@@ -11,6 +11,7 @@ import { ProductVariantPartialService } from 'src/product-variant-partial/produc
 import { ProductItemConnection } from './graphql-types/product-item-connection.dto';
 import { ProductItemOrderField } from 'src/shared/enums/product-item-order-fields.enum';
 import { ProductItemFilter } from './dto/filter-product-item.input';
+import { OrderDirection } from 'src/shared/enums/order-direction.enum';
 
 /**
  * Service for handling the e-stores inventory.
@@ -86,7 +87,8 @@ export class InventoryService {
    * @returns A promise that resolves to an array of product items.
    */
   async find(args: FindProductItemsArgs): Promise<ProductItem[]> {
-    const { first, skip, filter, orderBy } = args;
+    const { first, skip, filter } = args;
+    let { orderBy } = args;
     // build query
     const query = await this.buildQuery(args.filter);
     this.logger.debug(
@@ -94,7 +96,13 @@ export class InventoryService {
         filter,
       )}`,
     );
-
+    // default order direction is ascending
+    if  (!orderBy) {
+      orderBy = {
+        field: ProductItemOrderField.ID,
+        direction: OrderDirection.ASC,
+      };
+    }
     // retrieve the product items based on the provided arguments
     const productItems = await this.productItemModel
       .find(query)
@@ -103,7 +111,6 @@ export class InventoryService {
       .sort({ [orderBy.field]: orderBy.direction });
 
     this.logger.debug(`{find} returning ${productItems.length} results`);
-
     return productItems;
   }
 
