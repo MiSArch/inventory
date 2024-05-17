@@ -40,7 +40,7 @@ export class EventController {
         route: 'order-created',
       }, {
         pubsubname: 'pubsub',
-        topic: 'payment/payment/enabled',
+        topic: 'payment/payment/payment-enabled',
         route: 'payment-enabled'
       }, {
         pubsubname: 'pubsub',
