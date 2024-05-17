@@ -97,10 +97,10 @@ export class InventoryService {
       )}`,
     );
     // default order direction is ascending
-    if  (!orderBy) {
+    if  (!orderBy || !orderBy.field || !orderBy.direction) {
       orderBy = {
-        field: ProductItemOrderField.ID,
-        direction: OrderDirection.ASC,
+        field: orderBy?.field || ProductItemOrderField.ID,
+        direction: orderBy?.direction ||  OrderDirection.ASC,
       };
     }
     // retrieve the product items based on the provided arguments
