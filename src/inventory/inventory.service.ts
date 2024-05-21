@@ -3,7 +3,7 @@ import { CreateProductItemBatchInput } from './dto/create-product-item-batch.inp
 import { UpdateProductItemInput } from './dto/update-product-item.input';
 import { InjectModel } from '@nestjs/mongoose';
 import { ProductItem } from './entities/product-item.entity';
-import { Model } from 'mongoose';
+import { ClientSession, Model } from 'mongoose';
 import { FindProductItemsArgs } from './dto/find-product-items.input';
 import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 import { ReserveProductItemsBatchInput } from './dto/reserve-product-items-batch.input';
@@ -36,49 +36,45 @@ export class InventoryService {
   async createProductItemBatch(
     createProductItemBatchInput: CreateProductItemBatchInput,
   ): Promise<ProductItem[]> {
-    this.logger.debug(
-      `{createProductItemBatch} input: ${JSON.stringify(
-        createProductItemBatchInput,
-      )}`,
-    );
+    this.logger.debug(`{createProductItemBatch} input: ${JSON.stringify(createProductItemBatchInput)}`);
 
     // validate product variants existence
     await this.productVariantPartialService.findByIdOrFail(
       createProductItemBatchInput.productVariantId
     )
 
-    // handle batch creation in a transaction to be able to roll back
     const session = await this.productItemModel.startSession();
     session.startTransaction();
     try {
-      // store the created product items in an array
-      const productItems = [];
-
-      // create the specified number of product items
-      for (let i = 0; i < createProductItemBatchInput.number; i++) {
-        const newProductItem = new this.productItemModel({
-          ...createProductItemBatchInput,
-          productVariant: createProductItemBatchInput.productVariantId,
-        });
-        const savedProductItem = await newProductItem.save({ session });
-        productItems.push(savedProductItem);
-      }
-
-      // commit the transaction if all product items were created successfully
+      const productItems = await this.createItems(createProductItemBatchInput, session);
       await session.commitTransaction();
-
-      this.logger.debug(
-        `{create} created ${productItems.length} product items`,
-      );
+      this.logger.debug(`{create} created ${productItems.length} product items`,);
       return productItems;
     } catch (error) {
       // roll back all changes if an error occurred
       await session.abortTransaction();
       this.logError('createProductItemBatch', error);
       throw error;
-    } finally {
-      session.endSession();
     }
+  }
+
+  /**
+   * Helper to store a batch of product items.
+   * @param createProductItemBatchInput - The input data for creating the product item batch.
+   * @param session - The session in which to run the transaction.
+   * @returns A promise that resolves to an array of created product items.
+   */
+  private async createItems(createProductItemBatchInput: CreateProductItemBatchInput, session: ClientSession) {
+    const productItems = [];
+    for (let i = 0; i < createProductItemBatchInput.number; i++) {
+      const newProductItem = new this.productItemModel({
+        ...createProductItemBatchInput,
+        productVariant: createProductItemBatchInput.productVariantId,
+      });
+      const savedProductItem = await newProductItem.save({ session });
+      productItems.push(savedProductItem);
+    }
+    return productItems;
   }
 
   /**
@@ -174,6 +170,11 @@ export class InventoryService {
     return existingProductItems;
   }
 
+  /**
+   * Updates the status of the product items in an order.
+   * @param orderId - The id of the order for which to update the product items.
+   * @param status - The status to update the product items to.
+   */
   async updateOrderProductItemsStatus(
     orderId: string,
     status: ProductItemStatus,
@@ -258,51 +259,69 @@ export class InventoryService {
 
   /**
    * Reserves a batch of product items.
+   * Each batch is processed in a transaction to ensure that all items are reserved and there is no interference from other replicas.
    *
    * @param reserveInput - The input data for reserving product items.
    * @returns A promise that resolves to an array of reserved product items.
    * @throws NotFoundException if there are not enough product items available for the specified product variant.
    */
   async reserveProductItemBatch(
-    reserveInput: ReserveProductItemsBatchInput,
+    reserveInput: ReserveProductItemsBatchInput
   ): Promise<ProductItem[]> {
     const { productVariantId, number, orderId } = reserveInput;
+    const session = await this.productItemModel.startSession({
+      defaultTransactionOptions: { readConcern: { level: 'snapshot' } }
+    });
+    session.startTransaction();
+  
+    try {
+      const itemIds = await this.findAndReserveItems(session, productVariantId, number, orderId);
+      const reservedItems = await this.productItemModel.find({ filter: { _id: { $in: itemIds } } });
+      await session.commitTransaction();
+      session.endSession();
+      return reservedItems;
+    } catch (error) {
+      this.logError('reserveProductItemBatch', error);
+      await session.abortTransaction();
+      session.endSession();
+      throw error;
+    }
+  }
 
-    // validate product variants existence
-    await this.productVariantPartialService.findByIdOrFail(productVariantId);
-    // find the product items of the required product variant
-    const productItems = await this.productItemModel
-      .find({
-        productVariant: productVariantId,
-        inventoryStatus: ProductItemStatus.IN_STORAGE,
-      })
-      .limit(number);
-
-    if (productItems.length < number) {
+  /**
+   * Finds and reserves a batch of product items.
+   *
+   * @param session - The session in which to run the transaction.
+   * @param productVariantId - The id of the product variant for which to reserve the product items.
+   * @param number - The number of product items to reserve.
+   * @param orderId - The id of the order for which to reserve the product items.
+   * @returns A promise that resolves to an array of reserved product item ids.
+   * @throws NotFoundException if there are not enough product items available for the specified product variant.
+   */
+  async findAndReserveItems(
+    session: ClientSession,
+    productVariantId: string,
+    number: number,
+    orderId: string
+  ): Promise<string[]> {
+    const itemsToReserve = await this.productItemModel.find({
+      productVariant: productVariantId,
+      inventoryStatus: ProductItemStatus.IN_STORAGE
+    }).limit(number).session(session);
+  
+    if (itemsToReserve.length < number) {
       throw new NotFoundException(
-        `Not enough product items available for product variant "${productVariantId}"`,
+        `Not enough product items available for product variant "${productVariantId}"`
       );
     }
 
-    this.logger.debug(
-      `Reserving ${number} product items of product variant: ${productVariantId}`,
+    const itemIds = itemsToReserve.map(item => item._id);
+    await this.productItemModel.updateMany(
+      { _id: { $in: itemIds } },
+      { $set: { inventoryStatus: ProductItemStatus.RESERVED, orderId: orderId } },
+      { session }
     );
-
-    // set the inventory status of the selected product items to reserved
-    const ids = productItems.map((productItem) => productItem._id);
-    const updatedItems = await this.productItemModel.updateMany(
-      { _id: { $in: ids } },
-      {
-        $set: {
-          inventoryStatus: ProductItemStatus.RESERVED,
-          orderId: orderId,
-        },
-      },
-      { multi: true, upsert: true },
-    );
-
-    // return the reserved product items
-    return this.productItemModel.find({ _id: { $in: ids } });
+    return itemIds;
   }
 
   /**

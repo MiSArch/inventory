@@ -68,7 +68,6 @@ export class EventController {
     this.productVariantService.create(id);
   }
 
-
   /**
    * Endpoint for order creation events.
    * @param orderDto - The order data received from Dapr.
@@ -76,27 +75,20 @@ export class EventController {
   */
   @Post('order-created')
   async subscribeToOrderEvent(@Body('data') order: OrderDTO) {
-    // Handle incoming event data from Dapr
     this.logger.log(`Received event for order with id: ${order.id}`);
-    
     try {
-      // Attempt to reserve all product items for the order
       const results = await this.batchPromiseOrderItems(order);
-
       // Filter out unsuccessful reservations and extract their productVariantIds
       const unsuccessfulProductVariantIds = results
         .filter(result => !result.success)
         .map(result => result.productVariantId);
 
-      // Check total order reservation status
       if (unsuccessfulProductVariantIds.length > 0) {
         this.logger.error(`Failed to reserve product items for order with id: ${order.id}`);
-        // Not all were successful
         this.createInventoryErrorEvent(order, unsuccessfulProductVariantIds);
         // release the reserved product items
         return this.inventoryService.releaseProductItemBatch(order.id);
       }
-      // All were successful
       this.createInventorySuccessEvent(order);
     } catch (error) {
       this.logger.error(`Error processing order event: ${error}`);
@@ -175,7 +167,6 @@ export class EventController {
     }
   }
 
-  
   /**
    * Reserves product items in batch for an order.
    * @param order - The order containing the order items to be reserved.
@@ -242,6 +233,4 @@ export class EventController {
       eventPayload
     );
   }
-
-
 }
