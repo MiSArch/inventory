@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ProductVariantPartial } from './entities/product-variant-partial.entity';
 import { Model } from 'mongoose';
@@ -30,9 +30,14 @@ export class ProductVariantPartialService {
    * Finds a product variant partial by id.
    * @param id - The id of the product variant partial.
    * @returns A promise that resolves to the found product variant partial.
+   * @throws NotFoundException if the product variant partial with the given id is not found.
    */
-  async findById(id: string): Promise<ProductVariantPartial> {
+  async findByIdOrFail(id: string): Promise<ProductVariantPartial> {
     this.logger.log(`{findById} input: ${id}`);
-    return this.productVariantPartialModel.findById(id);
+    const productVariantPartial = await this.productVariantPartialModel.findById(id);
+    if (!productVariantPartial) {
+      throw new NotFoundException(`ProductVariant with ID "${id}" not found`);
+    }
+    return productVariantPartial;
   }
 }

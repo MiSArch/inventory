@@ -8,6 +8,7 @@ import { Role } from 'src/shared/enums/role.enum';
 import { queryKeys } from 'src/shared/utils/query.info.utils';
 import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 import { FindProductItemsByProductVariantArgs } from './dto/find-product-items-by-product-variant.input';
+import { GraphQLResolveInfo } from 'graphql';
 
 /**
  * Resolver for Foreign ProductVariant objects.
@@ -28,7 +29,7 @@ export class ProductVariantResolver {
   async productItems(
     @Parent() productVariant: ProductVariant,
     @Args() args: FindProductItemsByProductVariantArgs,
-    @Info() info,
+    @Info() info: GraphQLResolveInfo,
   ): Promise<ProductItemConnection> {
     this.logger.log(
       `Resolving Product Items for ProductVariant: ${JSON.stringify(

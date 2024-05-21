@@ -3,13 +3,15 @@ import { CreateProductItemBatchInput } from './dto/create-product-item-batch.inp
 import { UpdateProductItemInput } from './dto/update-product-item.input';
 import { InjectModel } from '@nestjs/mongoose';
 import { ProductItem } from './entities/product-item.entity';
-import { Model } from 'mongoose';
+import { ClientSession, Model } from 'mongoose';
 import { FindProductItemsArgs } from './dto/find-product-items.input';
 import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 import { ReserveProductItemsBatchInput } from './dto/reserve-product-items-batch.input';
 import { ProductVariantPartialService } from 'src/product-variant-partial/product-variant-partial.service';
 import { ProductItemConnection } from './graphql-types/product-item-connection.dto';
 import { ProductItemOrderField } from 'src/shared/enums/product-item-order-fields.enum';
+import { ProductItemFilter } from './dto/filter-product-item.input';
+import { OrderDirection } from 'src/shared/enums/order-direction.enum';
 
 /**
  * Service for handling the e-stores inventory.
@@ -34,80 +36,77 @@ export class InventoryService {
   async createProductItemBatch(
     createProductItemBatchInput: CreateProductItemBatchInput,
   ): Promise<ProductItem[]> {
-    this.logger.debug(
-      `{createProductItemBatch} input: ${JSON.stringify(
-        createProductItemBatchInput,
-      )}`,
-    );
+    this.logger.debug(`{createProductItemBatch} input: ${JSON.stringify(createProductItemBatchInput)}`);
 
     // validate product variants existence
-    if (
-      !(await this.productVariantPartialService.findById(
-        createProductItemBatchInput.productVariantId,
-      ))
-    ) {
-      throw new NotFoundException(
-        `ProductVariant with ID "${createProductItemBatchInput.productVariantId}" not found`,
-      );
-    }
+    await this.productVariantPartialService.findByIdOrFail(
+      createProductItemBatchInput.productVariantId
+    )
 
-    // handle batch creation in a transaction to be able to roll back
     const session = await this.productItemModel.startSession();
     session.startTransaction();
     try {
-      // store the created product items in an array
-      const productItems = [];
-
-      // create the specified number of product items
-      for (let i = 0; i < createProductItemBatchInput.number; i++) {
-        const newProductItem = new this.productItemModel({
-          ...createProductItemBatchInput,
-          productVariant: createProductItemBatchInput.productVariantId,
-        });
-        const savedProductItem = await newProductItem.save({ session });
-        productItems.push(savedProductItem);
-      }
-
-      // commit the transaction if all product items were created successfully
+      const productItems = await this.createItems(createProductItemBatchInput, session);
       await session.commitTransaction();
-
-      this.logger.debug(
-        `{create} created ${productItems.length} product items`,
-      );
+      this.logger.debug(`{create} created ${productItems.length} product items`,);
       return productItems;
     } catch (error) {
       // roll back all changes if an error occurred
       await session.abortTransaction();
       this.logError('createProductItemBatch', error);
       throw error;
-    } finally {
-      session.endSession();
     }
+  }
+
+  /**
+   * Helper to store a batch of product items.
+   * @param createProductItemBatchInput - The input data for creating the product item batch.
+   * @param session - The session in which to run the transaction.
+   * @returns A promise that resolves to an array of created product items.
+   */
+  private async createItems(createProductItemBatchInput: CreateProductItemBatchInput, session: ClientSession) {
+    const productItems = [];
+    for (let i = 0; i < createProductItemBatchInput.number; i++) {
+      const newProductItem = new this.productItemModel({
+        ...createProductItemBatchInput,
+        productVariant: createProductItemBatchInput.productVariantId,
+      });
+      const savedProductItem = await newProductItem.save({ session });
+      productItems.push(savedProductItem);
+    }
+    return productItems;
   }
 
   /**
    * Retrieves product items based on the provided arguments.
    * @param args - The arguments for pagination and sorting.
-   * @param filter - The filter to apply to the query.
    * @returns A promise that resolves to an array of product items.
    */
-  async find(args: FindProductItemsArgs, filter: any): Promise<ProductItem[]> {
-    const { first, skip, orderBy } = args;
+  async find(args: FindProductItemsArgs): Promise<ProductItem[]> {
+    const { first, skip, filter } = args;
+    let { orderBy } = args;
+    // build query
+    const query = await this.buildQuery(args.filter);
     this.logger.debug(
       `{find} query ${JSON.stringify(args)} with filter ${JSON.stringify(
         filter,
       )}`,
     );
-
+    // default order direction is ascending
+    if  (!orderBy || !orderBy.field || !orderBy.direction) {
+      orderBy = {
+        field: orderBy?.field || ProductItemOrderField.ID,
+        direction: orderBy?.direction ||  OrderDirection.ASC,
+      };
+    }
     // retrieve the product items based on the provided arguments
     const productItems = await this.productItemModel
-      .find(filter)
+      .find(query)
       .limit(first)
       .skip(skip)
       .sort({ [orderBy.field]: orderBy.direction });
 
     this.logger.debug(`{find} returning ${productItems.length} results`);
-
     return productItems;
   }
 
@@ -148,11 +147,7 @@ export class InventoryService {
     );
 
     // validate product variants existence
-    if (!(await this.productVariantPartialService.findById(productVariantId))) {
-      throw new NotFoundException(
-        `ProductVariant with ID "${productVariantId}" not found`,
-      );
-    }
+    await this.productVariantPartialService.findByIdOrFail(productVariantId);
 
     const existingProductItems = await this.productItemModel
       .findOneAndUpdate(
@@ -173,6 +168,25 @@ export class InventoryService {
     );
 
     return existingProductItems;
+  }
+
+  /**
+   * Updates the status of the product items in an order.
+   * @param orderId - The id of the order for which to update the product items.
+   * @param status - The status to update the product items to.
+   */
+  async updateOrderProductItemsStatus(
+    orderId: string,
+    status: ProductItemStatus,
+  ): Promise<void> {
+    this.logger.log(
+      `{updateOrderProductItemsStatus} Updating product items status for order: {${orderId}} to {${status}}`,
+    );
+
+    await this.productItemModel.updateMany(
+      { orderId },
+      { $set: { inventoryStatus: status } },
+    );
   }
 
   /**
@@ -197,7 +211,7 @@ export class InventoryService {
    * @param filter The filter to apply to the count operation.
    * @returns A promise that resolves to the count of product items.
    */
-  async count(filter: any): Promise<number> {
+  async count(filter: ProductItemFilter | undefined): Promise<number> {
     this.logger.debug(`{count} query: ${JSON.stringify(filter)}`);
     const count = await this.productItemModel.countDocuments(filter);
 
@@ -222,16 +236,8 @@ export class InventoryService {
     // Every query that returns any element needs the 'nodes' part
     // as per the GraphQL Federation standard
     if (query.includes('nodes')) {
-      // default order is ascending by id
-      if (!args.orderBy) {
-        args.orderBy = {
-          field: ProductItemOrderField.ID,
-          direction: 1,
-        };
-      }
-
       // get nodes according to args
-      connection.nodes = await this.find(args, args.filter);
+      connection.nodes = await this.find(args);
     }
 
     if (query.includes('totalCount') || query.includes('hasNextPage')) {
@@ -248,60 +254,74 @@ export class InventoryService {
    * @param error - The error object containing the error message and stack trace.
    */
   logError(functionName: string, error: Error) {
-    this.logger.error(`{${functionName}} ${error.message} ${error.stack}`);
+    this.logger.error(`{${functionName}} ${error.message}`);
   }
 
   /**
    * Reserves a batch of product items.
+   * Each batch is processed in a transaction to ensure that all items are reserved and there is no interference from other replicas.
    *
    * @param reserveInput - The input data for reserving product items.
    * @returns A promise that resolves to an array of reserved product items.
    * @throws NotFoundException if there are not enough product items available for the specified product variant.
    */
   async reserveProductItemBatch(
-    reserveInput: ReserveProductItemsBatchInput,
+    reserveInput: ReserveProductItemsBatchInput
   ): Promise<ProductItem[]> {
     const { productVariantId, number, orderId } = reserveInput;
+    const session = await this.productItemModel.startSession({
+      defaultTransactionOptions: { readConcern: { level: 'snapshot' } }
+    });
+    session.startTransaction();
+  
+    try {
+      const itemIds = await this.findAndReserveItems(session, productVariantId, number, orderId);
+      const reservedItems = await this.productItemModel.find({ filter: { _id: { $in: itemIds } } });
+      await session.commitTransaction();
+      session.endSession();
+      return reservedItems;
+    } catch (error) {
+      this.logError('reserveProductItemBatch', error);
+      await session.abortTransaction();
+      session.endSession();
+      throw error;
+    }
+  }
 
-    // validate product variants existence
-    if (!(await this.productVariantPartialService.findById(productVariantId))) {
+  /**
+   * Finds and reserves a batch of product items.
+   *
+   * @param session - The session in which to run the transaction.
+   * @param productVariantId - The id of the product variant for which to reserve the product items.
+   * @param number - The number of product items to reserve.
+   * @param orderId - The id of the order for which to reserve the product items.
+   * @returns A promise that resolves to an array of reserved product item ids.
+   * @throws NotFoundException if there are not enough product items available for the specified product variant.
+   */
+  async findAndReserveItems(
+    session: ClientSession,
+    productVariantId: string,
+    number: number,
+    orderId: string
+  ): Promise<string[]> {
+    const itemsToReserve = await this.productItemModel.find({
+      productVariant: productVariantId,
+      inventoryStatus: ProductItemStatus.IN_STORAGE
+    }).limit(number).session(session);
+  
+    if (itemsToReserve.length < number) {
       throw new NotFoundException(
-        `ProductVariant with ID "${productVariantId}" not found`,
+        `Not enough product items available for product variant "${productVariantId}"`
       );
     }
-    // find the product items of the required product variant
-    const productItems = await this.productItemModel
-      .find({
-        productVariant: productVariantId,
-        inventoryStatus: ProductItemStatus.IN_STORAGE,
-      })
-      .limit(number);
 
-    if (productItems.length < number) {
-      throw new NotFoundException(
-        `Not enough product items available for product variant "${productVariantId}"`,
-      );
-    }
-
-    this.logger.debug(
-      `Reserving ${number} product items of product variant: ${productVariantId}`,
+    const itemIds = itemsToReserve.map(item => item._id);
+    await this.productItemModel.updateMany(
+      { _id: { $in: itemIds } },
+      { $set: { inventoryStatus: ProductItemStatus.RESERVED, orderId: orderId } },
+      { session }
     );
-
-    // set the inventory status of the selected product items to reserved
-    const ids = productItems.map((productItem) => productItem._id);
-    const updatedItems = await this.productItemModel.updateMany(
-      { _id: { $in: ids } },
-      {
-        $set: {
-          inventoryStatus: ProductItemStatus.RESERVED,
-          orderId: orderId,
-        },
-      },
-      { multi: true, upsert: true },
-    );
-
-    // return the reserved product items
-    return this.productItemModel.find({ _id: { $in: ids } });
+    return itemIds;
   }
 
   /**
@@ -335,5 +355,24 @@ export class InventoryService {
     );
 
     return this.productItemModel.find({ _id: { $in: ids } });
+  }
+
+    /**
+   * Builds a query object based on the provided filter.
+   * @param filter - The filter object containing the criteria for the query.
+   * @returns The query object.
+   */
+  async buildQuery(filter: ProductItemFilter | undefined): Promise<{
+    productVariant?: string;
+    inventoryStatus?: string;
+  }> {
+    const query: any = {};
+
+    if (!filter) { return query; }
+
+    if (filter.productVariant) { query.status = filter.productVariant; }
+
+    if (filter.inventoryStatus) { query.createdAt = filter.inventoryStatus; }
+    return query;
   }
 }
