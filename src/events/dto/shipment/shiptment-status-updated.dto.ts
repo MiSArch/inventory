@@ -4,10 +4,10 @@ import { IsArray, IsEnum, IsOptional, IsString } from "class-validator";
  * Possible Shipment Statuses
  */
 export enum ShipmentStatus {
-  PENDING,
-  IN_PROGRESS,
-  DELIVERED,
-  FAILED
+  PENDING = "PENDING",
+  IN_PROGRESS = "IN_PROGRESS",
+  DELIVERED = "DELIVERED",
+  FAILED = "FAILED",
 }
 /**
  * DTO for a shipment status update
