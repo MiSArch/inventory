@@ -254,7 +254,7 @@ export class InventoryService {
    * @param error - The error object containing the error message and stack trace.
    */
   logError(functionName: string, error: Error) {
-    this.logger.error(`{${functionName}} ${error.message} ${error.stack}`);
+    this.logger.error(`{${functionName}} ${error.message}`);
   }
 
   /**

@@ -9,6 +9,8 @@ import { ProductVariantCreatedDto } from './dto/catalog/product-variant-created.
 import { PaymentEnabledDto } from './dto/payment/payment-enabled.dto';
 import { ProductItemStatus } from 'src/shared/enums/inventory-status.enum';
 import { ShipmentStatus, ShipmentStatusUpdatedDto } from './dto/shipment/shiptment-status-updated.dto';
+import { PaymentFailedDto } from './dto/payment/payment-failed.dto';
+import { DiscountValidationFailedDTO } from './dto/discount/discount-validation-failed.dto';
 
 /**
  * Controller for incoming Events
@@ -44,12 +46,20 @@ export class EventController {
         route: 'payment-enabled'
       }, {
         pubsubname: 'pubsub',
+        topic: 'payment/payment/payment-failed',
+        route: 'payment-failed'
+      }, {
+        pubsubname: 'pubsub',
         topic: 'shipment/shipment/status-updated',
         route: 'shipment-status-updated'
       }, {
         pubsubname: 'pubsub',
         topic: 'shipment/shipment/created',
         route: 'shipment-created'
+      }, {
+        pubsubname: 'pubsub',
+        topic: 'discount/order/validation-failed',
+        route: 'discount-validation-failed'
       }
   ];
   }
@@ -115,6 +125,22 @@ export class EventController {
   }
 
   /**
+   * Endpoint for payment failed events.
+   * Releases all product items in an order.
+   * @param paymentDto - The payment data received from Dapr.
+   * @returns A promise that resolves to void.
+  */
+  @Post('payment-failed')
+  async subscribeToPaymentFailedEvent(
+    @Body('data') paymentDto: PaymentFailedDto
+  ): Promise<void> {
+    const { order } = paymentDto;
+    // Handle incoming event data from Dapr
+    this.logger.log(`Received payment failed for order with id: ${order.id}`);
+    this.inventoryService.releaseProductItemBatch(order.id);
+  }
+
+  /**
    * Endpoint for shipment created events.
    * Updates the status of the product items in an order to SHIPPED.
    * @param shipmentDto - The shipment data received from Dapr.
@@ -151,7 +177,7 @@ export class EventController {
     if (!orderId) {
       return;
     }
-    this.logger.log(`Received shipment status update for order with id: ${orderId}`);
+    this.logger.log(`Received shipment status update for order with id: ${orderId} -> ${status}`);
 
     switch (status) {
       case ShipmentStatus.DELIVERED:
@@ -165,6 +191,21 @@ export class EventController {
           ProductItemStatus.LOST
         );
     }
+  }
+
+  /**
+   * Endpoint for discount validation failed events.
+   * Releases all product items in an order.
+   * @param order - The order data received from Dapr.
+   * @returns A promise that resolves to void.
+  */
+  @Post('discount-validation-failed')
+  async subscribeToDiscountValidationFailedEvent(
+    @Body('data') discountDto: DiscountValidationFailedDTO
+  ): Promise<void> {
+    const { order } = discountDto;
+    this.logger.log(`Received discount validation failed for order with id: ${order.id}`);
+    this.inventoryService.releaseProductItemBatch(order.id);
   }
 
   /**
@@ -233,4 +274,5 @@ export class EventController {
       eventPayload
     );
   }
+
 }
