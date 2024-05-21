@@ -73,7 +73,7 @@ export class EventController {
   async subscribeToProductVariantEvent(@Body('data') dto: ProductVariantCreatedDto): Promise<void> {
     // Handle incoming event data from Dapr
     const { id } = dto;
-    this.logger.log(`Received event for product variant with id: ${id}`);
+    this.logger.log(`Received create event for product variant with id: ${id}`);
     // Call the product variant service to create a new product variant
     this.productVariantService.create(id);
   }
@@ -85,7 +85,7 @@ export class EventController {
   */
   @Post('order-created')
   async subscribeToOrderEvent(@Body('data') order: OrderDTO) {
-    this.logger.log(`Received event for order with id: ${order.id}`);
+    this.logger.log(`Received create event for order with id: ${order.id}`);
     try {
       const results = await this.batchPromiseOrderItems(order);
       // Filter out unsuccessful reservations and extract their productVariantIds
@@ -245,6 +245,7 @@ export class EventController {
    * @param order - The order context.
    */
   createInventorySuccessEvent(order: OrderDTO): void {
+    this.logger.log(`Successfully reserved product items for order with id: ${order.id}`);
     const eventPayload: ReservationSucceededDTO = {
         order
     };
