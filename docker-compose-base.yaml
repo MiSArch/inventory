@@ -18,6 +18,12 @@ services:
       target: production
     environment:
       DATABASE_URI: mongodb://inventory-db:27017
+      OTEL_TRACES_EXPORTER: none
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      OTEL_NODE_RESOURCE_DETECTORS: env,host,os
+      OTEL_SERVICE_NAME: inventory
+      OTEL_SEMCONV_STABILITY_OPT_IN: http
+      NODE_OPTIONS: --require @opentelemetry/auto-instrumentations-node/register
     depends_on:
       - inventory-db
   inventory-db:
