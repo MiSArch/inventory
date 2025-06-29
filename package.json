@@ -43,6 +43,7 @@
     "graphql": "^16.8.1",
     "mongoose": "^8.0.3",
     "nest-winston": "^1.9.4",
+    "process": "^0.11.10",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "uuid": "^9.0.1",
